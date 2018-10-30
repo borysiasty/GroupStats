@@ -1,0 +1,9 @@
+<RCC>
+  <qresource prefix="/plugins/groupstats">
+    <file>icons/alpha.png</file>
+    <file>icons/digits.png</file>
+    <file>icons/geom.png</file>
+    <file>icons/calc.png</file>
+    <file>icon.png</file>
+  </qresource>
+</RCC>

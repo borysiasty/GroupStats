@@ -1,0 +1,26 @@
+[general]
+name=Group Stats
+description=Stats and analysis for vector layers data
+description[pl]=Statystyki i analizy na danych z warstw wektorowych
+
+about=Migrated to QGIS 3 version by Faunalia. Sponsored by Arpa Piemonte for ERIKUS program in collaboration with Regione Piemonte e Dipartimento della Protezione Civile - Funzione Censimento Danni <br/><br/>Migrato alla versione QGIS3 da Faunalia per Arpa Piemonte per il programma ERIKUS in collaborazione con Regione Piemonte e Dipartimento della Protezione Civile - Funzione Censimento Danni
+
+version=2.1.0
+qgisMinimumVersion=3.0
+
+# tags are comma separated with spaces allowed
+tags=stats,analysis,pivot table
+category=Vector
+
+homepage=http://github.com/borysiasty/GroupStats
+tracker=http://github.com/borysiasty/GroupStats
+repository=http://github.com/borysiasty/GroupStats
+
+icon=icon.png
+
+experimental=False
+deprecated=False
+
+# Author contact information
+author=Rajmund Szostok. Migrated to QGIS 3 by Borys Jurgiel and Faunalia.
+email=qgis@borysjurgiel.pl
