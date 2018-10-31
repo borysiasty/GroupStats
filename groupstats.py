@@ -38,19 +38,20 @@ class GroupStats:
     def __init__(self, iface):
         # Save reference to the QGIS interface
         self.iface = iface
-        # Create the dialog and keep reference
-        self.dlg = GroupStatsDialog()
         # initialize locale
         pluginPath = QFileInfo(os.path.realpath(__file__)).path()  # patch by Régis Haubourg
-        localeName = QLocale.system().name()
-
         if QFileInfo(pluginPath).exists():
-            self.localePath = pluginPath + "/i18n/groupstats_" + localeName + ".qm"            
-        
-        if QFileInfo(self.localePath).exists():
-            self.translator = QTranslator()
-            self.translator.load(self.localePath)
-            QCoreApplication.installTranslator(self.translator)
+            localeName = QgsSettings().value("locale/userLocale")
+            if localeName:
+                localePath = pluginPath + "/i18n/groupstats_" + localeName + ".qm"
+                if not QFileInfo(localePath).exists():
+                    localePath = pluginPath + "/i18n/groupstats_" + localeName[:2] + ".qm"
+                if QFileInfo(localePath).exists():
+                    self.translator = QTranslator()
+                    self.translator.load(localePath)
+                    QCoreApplication.installTranslator(self.translator)
+        # Create the dialog and keep reference
+        self.dlg = GroupStatsDialog()
 
 
     def initGui(self):    
@@ -78,8 +79,8 @@ class GroupStats:
 
         if len(listaWarstw) == 0:
             QMessageBox.information(None,
-                                    QCoreApplication.translate('GroupStats','Information'),
-                                    QCoreApplication.translate('GroupStats','Vector layers not found'))
+                                    QCoreApplication.translate('GroupStats', 'Information'),
+                                    QCoreApplication.translate('GroupStats', 'Vector layers not found'))
             return
         self.dlg.iface = self.iface
         self.dlg.ustawWarstwy(listaWarstw)
