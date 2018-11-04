@@ -138,7 +138,7 @@ class GroupStatsDialog(QMainWindow):
         iterator = provider.getFeatures()
 
         if self.ui.tylkoZaznaczone.isChecked():                                         # Pobranie ID zaznaczonych obiektów
-            zaznaczoneObiekty = warstwa.selectedFeaturesIds()
+            zaznaczoneObiekty = warstwa.selectedFeatureIds()
             tylkoZaznaczone = True
         else:
             zaznaczoneObiekty = []

@@ -79,7 +79,7 @@
     <string/>
    </property>
    <property name="windowTitle">
-    <string>&amp;Control panel</string>
+    <string>Control panel</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
