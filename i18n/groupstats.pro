@@ -1,8 +1,9 @@
-﻿FORMS = ../ui_groupstats.ui
+FORMS = ../ui_groupstats.ui
 
 SOURCES = ../groupstats.py \
 ../GroupStatsDialog.py
 
 
-TRANSLATIONS = groupstats_it.ts
+TRANSLATIONS = groupstats_fr.ts \
+groupstats_it.ts
 

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.0" language="fr_FR" sourcelanguage="en_US">
+<!DOCTYPE TS><TS version="2.0" language="fr_FR" sourcelanguage="en_US">
 <context>
     <name>GroupStats</name>
     <message>
@@ -9,7 +8,7 @@
         <translation>Information</translation>
     </message>
     <message>
-        <location filename="../groupstats.py" line="80"/>
+        <location filename="../groupstats.py" line="81"/>
         <source>Vector layers not found</source>
         <translation>Aucun vecteur trouve</translation>
     </message>
@@ -116,8 +115,8 @@
     </message>
     <message>
         <location filename="../ui_groupstats.ui" line="82"/>
-        <source>&amp;Control panel</source>
-        <translation>&amp;Panneau de controle</translation>
+        <source>Control panel</source>
+        <translation>Panneau de controle</translation>
     </message>
     <message>
         <location filename="../ui_groupstats.ui" line="100"/>
@@ -282,47 +281,47 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>Obliczenia</name>
     <message>
-        <location filename="../GroupStatsDialog.py" line="1079"/>
+        <location filename="../GroupStatsDialog.py" line="1074"/>
         <source>count</source>
         <translation>compter</translation>
     </message>
     <message>
-        <location filename="../GroupStatsDialog.py" line="1080"/>
+        <location filename="../GroupStatsDialog.py" line="1075"/>
         <source>sum</source>
         <translation>somme</translation>
     </message>
     <message>
-        <location filename="../GroupStatsDialog.py" line="1081"/>
+        <location filename="../GroupStatsDialog.py" line="1076"/>
         <source>average</source>
         <translation>moyenne</translation>
     </message>
     <message>
-        <location filename="../GroupStatsDialog.py" line="1082"/>
+        <location filename="../GroupStatsDialog.py" line="1077"/>
         <source>variance</source>
         <translation>variance</translation>
     </message>
     <message>
-        <location filename="../GroupStatsDialog.py" line="1083"/>
+        <location filename="../GroupStatsDialog.py" line="1078"/>
         <source>stand.dev.</source>
         <translation>dev. stand.</translation>
     </message>
     <message>
-        <location filename="../GroupStatsDialog.py" line="1084"/>
+        <location filename="../GroupStatsDialog.py" line="1079"/>
         <source>median</source>
         <translation>médiane</translation>
     </message>
     <message>
-        <location filename="../GroupStatsDialog.py" line="1085"/>
+        <location filename="../GroupStatsDialog.py" line="1080"/>
         <source>min</source>
         <translation>minimum</translation>
     </message>
     <message>
-        <location filename="../GroupStatsDialog.py" line="1086"/>
+        <location filename="../GroupStatsDialog.py" line="1081"/>
         <source>max</source>
         <translation>maximum</translation>
     </message>
     <message>
-        <location filename="../GroupStatsDialog.py" line="1087"/>
+        <location filename="../GroupStatsDialog.py" line="1082"/>
         <source>unique</source>
         <translation>valeur unique</translation>
     </message>

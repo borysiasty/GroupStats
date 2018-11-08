@@ -29,5 +29,6 @@ author=Rajmund Szostok. Migrated to QGIS 3 by Borys Jurgiel and Faunalia.
 email=qgis@borysjurgiel.pl
 
 changelog=
+    2.1.2    Add Frech tranlation. Patch by Sylvain POULAIN.
     2.1.1    Minor fixes
     2.1.0    Migrate to QGIS 3
