@@ -1107,7 +1107,7 @@ class Obliczenia(QObject):                   # gotowe
         if liczebnosc == 1:
             mediana = wyniki[0]
         else:
-            pozycja = liczebnosc/2
+            pozycja = int(liczebnosc / 2)
             if liczebnosc%2 == 0:
                 mediana = (wyniki[pozycja]+wyniki[pozycja-1])/2
             else:
