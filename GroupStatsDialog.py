@@ -374,7 +374,7 @@ class GroupStatsDialog(QMainWindow):
         slownikPol ['atrybutyTxt'] = []
         for i in range(fields.count()):
             atrybut = fields.at(i)
-            if atrybut.typeName().upper() in ('REAL', 'INTEGER', 'INT4', 'INT8', 'FLOAT4'):
+            if atrybut.typeName().upper() in ('REAL', 'FLOAT4') or atrybut.typeName().upper().startswith('INT'):
                 slownikPol['atrybutyLicz'].append((atrybut.name(), i))
             else:
                 slownikPol['atrybutyTxt'].append((atrybut.name(), i))
