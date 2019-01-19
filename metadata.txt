@@ -8,7 +8,7 @@ about=
 
  Migrato alla versione QGIS3 da Faunalia per Arpa Piemonte per il programma ERIKUS in collaborazione con Regione Piemonte e Dipartimento della Protezione Civile - Funzione Censimento Danni
 
-version=2.1.3
+version=2.1.4
 qgisMinimumVersion=3.0
 
 # tags are comma separated with spaces allowed

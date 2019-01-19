@@ -23,20 +23,20 @@ class GroupStatsDialog(QMainWindow):
         QWidget.__init__(self, parent)
         self.ui = FORM_CLASS()
         self.ui.setupUi(self)
-        
+
         self.ui.wyniki = OknoWyniki(self.ui.centralwidget)
 
         self.ui.horizontalLayout.addWidget(self.ui.wyniki)
 
         self.obliczenia = Obliczenia(self)
-        
+
         self.ui.listaPol.setAcceptDrops(True)
         self.ui.listaPol.setModelColumn(2)
-        
+
         self.ui.wiersze.setAcceptDrops(True)
         self.ui.kolumny.setAcceptDrops(True)
         self.ui.wartosci.setAcceptDrops(True)
-        
+
         self.ui.oblicz.clicked.connect(self.pokazWynik)
         self.ui.wyczysc.clicked.connect(self.wyczyscWybor)
         self.ui.filtrButton.clicked.connect(self.ustawFiltr)
@@ -46,25 +46,25 @@ class GroupStatsDialog(QMainWindow):
                     'atrybutyLicz':[('Moc stacji', 3)],
                     'geometria':[('Dlugosc', 1), ('Powierzchnia', 2)],
                     'obliczenia':[('Liczebnosc', 1), ('Suma', 2), ('Srednia', 3), ('Odchylenie statystyczne', 4)]}
-        
+
         self.tm1 = ModelListaPol(self)
         self.ui.listaPol.setModel(self.tm1)
 
         self.tm2 = ModelWiK(self)
         #tm2.ustawInneModele(tm1)
         self.ui.wiersze.setModel(self.tm2)
-        
+
         self.tm3 = ModelWiK(self)
         #tm3.ustawInneModele(tm1)
         self.ui.kolumny.setModel(self.tm3)
-        
+
         self.tm4 = ModelWartosci(self)
         self.ui.wartosci.setModel(self.tm4)
-        
+
         self.tm2.ustawInneModele(self.tm3, self.tm4)
         self.tm3.ustawInneModele(self.tm2, self.tm4)
         self.tm4.ustawInneModele(self.tm2, self.tm3)
-        
+
         self.tm2.rowsInserted.connect(self.blokujObliczenia)   # Sygnał wyboru warstwy
         self.tm3.rowsInserted.connect(self.blokujObliczenia)   # Sygnał wyboru warstwy
         self.tm4.rowsInserted.connect(self.blokujObliczenia)   # Sygnał wyboru warstwy
@@ -79,13 +79,13 @@ class GroupStatsDialog(QMainWindow):
         self.ui.actionPokazPanel.triggered.connect(self.pokazPanelSterowania)   # Sygnał wyboru warstwy
         self.ui.actionPokazNaMapie.triggered.connect(self.pokazNaMapie)   # Sygnał wyboru warstwy
         self.ui.actionTutorial.triggered.connect(self.pokazTutorial)   # Sygnał wyboru warstwy
-        
+
         self.ui.wyniki.verticalHeader().sortIndicatorChanged.connect(self.sortRows)   # Sygnał wyboru warstwy
 
-    
+
     def sortRows(self,wiersz,tryb):
             self.ui.wyniki.model().sortRows(wiersz,tryb)
-        
+
 
     def blokujObliczenia(self, x, y, z): #gotowe
         wartosci = self.tm4.dane
@@ -101,15 +101,15 @@ class GroupStatsDialog(QMainWindow):
                 self.ui.oblicz.setEnabled(True)
         else:
             self.ui.oblicz.setEnabled(False)
-        
-        
+
+
     def pokazWynik(self):               #gotowe
         "Wykonuje obliczenia i wysyła je do wyswietlenia"
-        
+
         wybraneWiersze = tuple(self.tm2.dane)                                               # Sczytanie z okna wybranych wierszy
         wybraneKolumny = tuple(self.tm3.dane)                                               # Sczytanie z okna wybranych kolumn
         wybraneWartosciiObl = tuple(self.tm4.dane)                                          # Sczytanie z okna wybranej wartosci i obliczenia
-        
+
         wartosc = [x for x in wybraneWartosciiObl if x[0]!='obliczenia'][0]                 # Sczytanie pola, które zostało wybrane do obliczeń (moe być tylko jedno)
         if wartosc[0]=='geometria':                                                         # Ustawienie funkcji obliczającej w zależności od typu wybranej wartości
             if wartosc[2]==1:
@@ -120,11 +120,11 @@ class GroupStatsDialog(QMainWindow):
             wartoscFunkcja = lambda obiekt: None if obiekt.attribute(wartosc[1])==None else obiekt.attribute(wartosc[1])#.toString()    # atrybut tekstowy
         elif wartosc[0]=='atrybutyLicz':
             wartoscFunkcja = lambda obiekt: None if obiekt.attribute(wartosc[1])==None else float(obiekt.attribute(wartosc[1]))         #.toReal()[0]   # atrybut liczbowy (toReal daje wynik (real, True/False))
-            
+
         indeks = self.ui.warstwa.currentIndex()                                             # Pobranie wybranej warstwy
         idWarstwy = self.ui.warstwa.itemData(indeks)
         warstwa = QgsProject.instance().mapLayer(idWarstwy)#.toString())
-        
+
         warstwaTemp = QgsVectorLayer(warstwa.source(), warstwa.name(), warstwa.providerType())
         warstwaTemp.setCrs(warstwa.crs())
         filtr = self.ui.filtr.toPlainText()
@@ -143,7 +143,7 @@ class GroupStatsDialog(QMainWindow):
         else:
             zaznaczoneObiekty = []
             tylkoZaznaczone = False
-            
+
         wyniki = {}                                                                         # Słownik na wyniki {((wiersz)(kolumna)):[[wartosci],[indeksy]}
         f=QgsFeature()                                                                      # Wyszukiwanie danych do obliczeń
         liczbaObiektow = provider.featureCount()
@@ -155,7 +155,7 @@ class GroupStatsDialog(QMainWindow):
         licznikNULL = 0
         while iterator.nextFeature(f):                                                      # dla każdego obiektu...
             if tylkoZaznaczone==False or (tylkoZaznaczone and (f.id() in zaznaczoneObiekty)):
-            
+
                 klucz_kol = []                                                                  # klucz kolumny (kolumna1, kolumna2...)
                 klucz_wie = []                                                                  # klucz wierszy (wiersz1, wiersze2...)
                 klucz = ()
@@ -170,7 +170,7 @@ class GroupStatsDialog(QMainWindow):
                             nowyKluczKolumny = ''
                         else:
                             nowyKluczKolumny = f.attribute(k[1])
-                            
+
                         klucz_kol.append(nowyKluczKolumny)#.toString())
                 for k in wybraneWiersze:                                                        # dla każdego wybranego wiersza sprawdzmy typ wiersza
                     if k[0]=='geometria':                                                       # i tworzymy klucz wiersza
@@ -185,30 +185,30 @@ class GroupStatsDialog(QMainWindow):
                             nowyKluczWiersza = f.attribute(k[1])
 
                         klucz_wie.append(nowyKluczWiersza)
-                    
+
                 klucz = ( tuple(klucz_wie) , tuple(klucz_kol) )                                 # klucz do identyfikacji grup obiektów
-                
+
                 wartoscDoObliczen = wartoscFunkcja(f)
                 if wartoscDoObliczen!=None or self.ui.useNULL.isChecked():
                     if  wartoscDoObliczen==None:
                         licznikNULL += 1
                         if wartosc[0]=='atrybutyLicz':
                             wartoscDoObliczen=0
-                    
+
                     if klucz in wyniki:
                         wyniki[klucz][0].append(wartoscDoObliczen)                                     # jeśli klucz istnieje to dadawana jest nowa wartosc do listy
                     else:
                         wyniki[klucz] = [[wartoscDoObliczen],[]]                                         # jeśli klucz nie istnieje to jest tworona nowa lista
-                    
+
                     wyniki[klucz][1].append(f.id())
                 else:
                     licznikNULL += 1
-                    
+
                 licznik = licznik + procent
                 self.statusBar().showMessage(QCoreApplication.translate('GroupStats','Calculate... ') + '%.0f%%' % (licznik))         # Wyświetlenie postępu
-            
+
         self.statusBar().showMessage(self.statusBar().currentMessage() + ' |  ' + QCoreApplication.translate('GroupStats','generate view...'))
-            
+
         klucze = wyniki.keys()                                                              # Znalezienie unikalnych kluczy wierszy i kolumn (osobno)
         wier = set([])
         kolu = set([])
@@ -217,29 +217,29 @@ class GroupStatsDialog(QMainWindow):
             kolu.add(z[1])
         wiersze = list(wier)                                                                # lista unikalnych kluczy wierszy
         kolumny = list(kolu)                                                                # lista unikalnych kluczy kolumn
-            
+
         wierSlownik={}                                                                      # Stworzenie słowników dla wierszy i kolumn (szybsze wyszukiwanie)
         for nr, wie in enumerate(wiersze):
             wierSlownik[wie]=nr
         kolSlownik={}
         for nr, kol in enumerate(kolumny):
             kolSlownik[kol]=nr
-            
+
         obliczenia = [[x[2] for x in wybraneWartosciiObl if x[0]=='obliczenia'],            # lista wybranych obliczeń w wartościach, wierszach i kolumnach
                       [x[2] for x in wybraneWiersze      if x[0]=='obliczenia'],
                       [x[2] for x in wybraneKolumny      if x[0]=='obliczenia']]
-            
+
         if len(obliczenia[0])!=0:                                                           # Wzięcie do obliczeń tylko niepustej części listy powyżej
             obliczenie = obliczenia[0]
         elif len(obliczenia[1])!=0:
             obliczenie = obliczenia[1]
         else:
             obliczenie = obliczenia[2]
-        
+
         dane = []                                                                           # Stworzenie pustej tablicy na dane (l.wierszy x l.kolumn)
         for x in range( max( len(wiersze) , len(wiersze)*len(obliczenia[1]))):
             dane.append(max(len(kolumny),len(kolumny)*len(obliczenia[2]))*[('',())])
-            
+
         for x in klucze:                                                                    # Obliczenie wartości dla wszystkich kluczy
             nrw = wierSlownik[x[0]]                                                         # nr wiersza w tabeli danych dla wybranego klucza
             nrk = kolSlownik[x[1]]                                                          # nr kolumny w tabeli danych dla wybranego klucza
@@ -254,7 +254,7 @@ class GroupStatsDialog(QMainWindow):
         atr = {}                                                                            # Attributes as dict.
         for i in range(provider.fields().count()):
             atr[i] = provider.fields().at(i)
-            
+
         nazwyWierszy=[]                                                                     # Lista z nazwami wierszy
         for x in wybraneWiersze:
             if x[0]=='geometria':
@@ -267,7 +267,7 @@ class GroupStatsDialog(QMainWindow):
                 nazwyKolumn.append(x[1])
             elif x[0]!='obliczenia':
                 nazwyKolumn.append(atr[x[2]].name())
-            
+
         nazwaKolumnyObiczen=()                                                              # Wstawienie nazw wierszy i kolumn z obliczeniami
         nazwaWierszaObliczen=()
         if len(obliczenia[1])>0:
@@ -288,7 +288,7 @@ class GroupStatsDialog(QMainWindow):
         if len(kolumny1)>0 and len(kolumny1[0])>0:
             kolumny1.insert(0,tuple(nazwyKolumn)+nazwaKolumnyObiczen)
 
-        
+
         if len(wiersze1)>0 and len(kolumny1)>0:
             self.ui.wyniki.setUpdatesEnabled(False)
             self.tm5 = ModelWyniki(dane, wiersze1, kolumny1, warstwa)
@@ -304,45 +304,45 @@ class GroupStatsDialog(QMainWindow):
                 self.ui.wyniki.resizeColumnToContents(i)
                 licznik = licznik + procent
                 self.statusBar().showMessage(komunikat + '%.0f%%' % (licznik))
-            
+
             self.ui.wyniki.setUpdatesEnabled(True)
-            
+
             if licznikNULL==1:
                 rekordy='record'
             else:
                 rekordy='records'
-            
+
             if self.ui.useNULL.isChecked() and licznikNULL>0:
                 tekstNULL = QCoreApplication.translate('GroupStats','  (used %s %s with null value in "%s" field)' % (licznikNULL, rekordy, wartosc[1]))
             elif self.ui.useNULL.isChecked()==False and licznikNULL>0:
                 tekstNULL = QCoreApplication.translate('GroupStats','  (not used %s %s with null value in "%s" field)' % (licznikNULL, rekordy, wartosc[1]))
             else:
                 tekstNULL = ''
-                
+
             self.statusBar().showMessage(self.statusBar().currentMessage() + ' |  ' + QCoreApplication.translate('GroupStats','done.')+tekstNULL, 20000)
-            
+
         else:
             try:
                 del(self.tm5)
             except AttributeError:
                 pass
-                
+
             self.statusBar().showMessage(QCoreApplication.translate('GroupStats','No data found.'), 10000)
-            
-        
+
+
     def ustawWarstwy (self, warstwy):   #gotowe
         "Dodaje dostępne wartwy do listy wyboru w oknie"
-            
+
         indeks = self.ui.warstwa.currentIndex()
         if indeks !=-1:
             idWarstwy = self.ui.warstwa.itemData(indeks)                        # id wcześniej wybranej warstwy
-            
+
         self.ui.warstwa.blockSignals(True)
         self.ui.warstwa.clear()                                                 # wypełnienie comboBoxa nową listą warstw
         warstwy.sort(key=lambda x: x[0].lower())
         for i in warstwy:
             self.ui.warstwa.addItem(i[0], i[1])
-            
+
         if indeks !=-1:
             indeks2 = self.ui.warstwa.findData(idWarstwy)                       # jeżeli wcześniej wybrana warstwa jest to liście to wybranie jej
             if indeks2 !=-1:
@@ -352,11 +352,11 @@ class GroupStatsDialog(QMainWindow):
         else:
             self.wyborWarstwy(0)
         self.ui.warstwa.blockSignals(False)
-        
-        
+
+
     def wyborWarstwy(self, indeks):     #gotowe
         "Uruchamiane po wybraniu warstwy z listy. Ustawia nową listę pól do wyboru i kasuje okna z już wybranymi polami"
-            
+
         idW = self.ui.warstwa.itemData(indeks)                          # Pobranie ID wybranej warstwy
         warstwa = QgsProject.instance().mapLayer(idW)#.toString())
         provider = warstwa.dataProvider()
@@ -369,7 +369,7 @@ class GroupStatsDialog(QMainWindow):
             slownikPol ['geometria'] = [(QCoreApplication.translate('GroupStats','Length'), 1)]
         elif warstwa.geometryType() == QgsWkbTypes.PolygonGeometry:                             # polygon
             slownikPol ['geometria'] = [(QCoreApplication.translate('GroupStats','Perimeter'), 1), (QCoreApplication.translate('GroupStats','Area'), 2)]
-            
+
         slownikPol ['atrybutyLicz'] = []
         slownikPol ['atrybutyTxt'] = []
         for i in range(fields.count()):
@@ -378,18 +378,18 @@ class GroupStatsDialog(QMainWindow):
                 slownikPol['atrybutyLicz'].append((atrybut.name(), i))
             else:
                 slownikPol['atrybutyTxt'].append((atrybut.name(), i))
-            
+
         slownikPol['obliczenia']=[]
         obl = self.obliczenia.lista
         for c,b in obl.items():
             slownikPol['obliczenia'].append((b[0],c))
-            
+
         del(self.tm1)
         self.tm1 = ModelListaPol()
         self.ui.listaPol.setModel(self.tm1)
         klucze = ['obliczenia', 'geometria']
         for i in klucze:
-            j = slownikPol[i] 
+            j = slownikPol[i]
             j.sort(key=lambda x: x[0].lower())
             wiersze=[]
             for k, l in j:
@@ -402,70 +402,70 @@ class GroupStatsDialog(QMainWindow):
             j = slownikPol[i]
             for k, l in j:
                 wiersze.append((i,k,l))
-        
+
         wiersze.sort(key=lambda x: x[1].lower())
         self.tm1.insertRows( 0, len(wiersze), QModelIndex(), wiersze)
 
         self.wyczyscWybor()
-        
-    
+
+
     def wyczyscWybor(self):             # gotowe
         " Czyści okna z wybranymi wierszami, kolumnami i wartościami"
         self.tm2.removeRows(0, self.tm2.rowCount() ,QModelIndex())
         self.tm3.removeRows(0, self.tm3.rowCount() ,QModelIndex())
         self.tm4.removeRows(0, self.tm4.rowCount() ,QModelIndex())
         self.ui.filtr.setPlainText('')
-        
-        
+
+
     def pokazPanelSterowania(self):     # gotowe
         ""
-        
+
         self.ui.panelSterowania.setVisible(True)
-        
+
     def pokazTutorial(self):
         url = "http://underdark.wordpress.com/2013/02/02/group-stats-tutorial/"
         webbrowser.open (url, 2)
-        
+
     def ustawFiltr(self):               # gotowe 2
         indeks = self.ui.warstwa.currentIndex()                                             # Pobranie wybranej warstwy
         idWarstwy = self.ui.warstwa.itemData(indeks)
         warstwa = QgsProject.instance().mapLayer(str(idWarstwy))
-        
+
         tekst = self.ui.filtr.toPlainText()                                                 # Pobranie tekstu z okna i wyświetlenie okna zapytań
         q = QgsSearchQueryBuilder(warstwa)
         q.setSearchString(tekst)
         q.exec_()
-        
+
         self.ui.filtr.setPlainText(q.searchString ())                                       # Wstawienie zapytania do okna
-        
+
     # ------------------------ KOPIOWANIE DANYCH DO SCHOWKA I ZAPIS CSV ----------------------------START
-        
+
     def kopiowanie (self):
         "Kopiowanie wszystkich danych do schowka"
         tekst, test = self.pobierzDaneZTabeli(True, True)
         if test==True:
             schowek = QApplication.clipboard()
             schowek.setText(tekst)
-        
+
     def kopiowanieZaznaczonych (self):
         "Kopiowanie zaznaczonych danych do schowka"
         tekst, test = self.pobierzDaneZTabeli(False, True)
         if test==True:
             schowek = QApplication.clipboard()
             schowek.setText(tekst)
-        
+
     def eksportCSV (self):
         "Zapisuje wszystkie dane do pliku CSV"
         dane, test = self.pobierzDaneZTabeli(True, False)
         if test==True:
             self.zapiszDaneWPliku(dane)
-        
+
     def eksportCSVZaznaczonych (self):
         "Zapisuje zaznaczone dane do pliku CSV"
         dane, test = self.pobierzDaneZTabeli(False, False)
         if test==True:
             self.zapiszDaneWPliku(dane)
-        
+
     def zapiszDaneWPliku (self, dane):
         "Obsługa zapisu danych do pliku"
         oknoPlikow = QFileDialog()                                              # Wybór pliku do zapisu
@@ -481,20 +481,20 @@ class GroupStatsDialog(QMainWindow):
             #plikCSV.writerow([bytes(x, 'utf-8') for x in i])
             plikCSV.writerow(i)
         plik.close()
-        
+
     def pobierzDaneZTabeli(self, wszystkieDane=True, znakiSterujace=False):
         if self.ui.wyniki.model()==None:
             QMessageBox.information(None,QCoreApplication.translate('GroupStats','Information'), \
                 QCoreApplication.translate('GroupStats','No data to save/copy'))
             return None, False
-            
+
         tekst=''
         dane = []
         liczbaKolumn = self.tm5.columnCount()
         liczbaWierszy = self.tm5.rowCount()
         wiersze = []
         kolumny = []
-            
+
         if wszystkieDane == False:                                                               # Jeśli opcja 'tylko zaznaczone' pobranie indeksów zaznaczonych pól
             listaIndeksow = self.ui.wyniki.selectedIndexes()
             if len(listaIndeksow)==0:
@@ -504,7 +504,7 @@ class GroupStatsDialog(QMainWindow):
             for i in listaIndeksow:
                 wiersze.append(i.row())
                 kolumny.append(i.column())
-            
+
         for i in range(liczbaWierszy):                                                          # Kopiowanie danych z tabeli
             if wszystkieDane or (i in wiersze) or (i < self.tm5.offsetY):
                 wiersz = []
@@ -516,19 +516,19 @@ class GroupStatsDialog(QMainWindow):
         if znakiSterujace == True:
             for m, i in enumerate(dane):                                                          # Kopiowanie danych z tabeli
                 if m>0:
-                    tekst = tekst + chr(13)            
-                for n, j in enumerate(i):                  
+                    tekst = tekst + chr(13)
+                for n, j in enumerate(i):
                     if n>0:
                         tekst = tekst + chr(9)
                     tekst = tekst + j
             return tekst, True
         else:
             return dane, True
-            
+
     # ------------------------ KOPIOWANIE DANYCH DO SCHOWKA I ZAPIS CSV ----------------------------END
-        
-        
-        
+
+
+
     def pokazNaMapie(self):             # zmienic zeby nie dublowac indeksow z komorek
         listaIndeksow = self.ui.wyniki.selectedIndexes()                                    # Pobranie indeksów zaznaczonych pól
         listaId = []
@@ -538,7 +538,7 @@ class GroupStatsDialog(QMainWindow):
                 lista = ()
             for j in lista:
                 listaId.append(j)    #w 1 było listaId.append(j.toInt()[0])
-            
+
         self.tm5.warstwa.selectByIds(listaId)                                           #   zaznaczenie ich na mapie
         self.iface.mapCanvas().zoomToSelected(self.tm5.warstwa)                         #   zoom do wybranych obiektów
         if len(listaId)==1 and self.tm5.warstwa.geometryType()==0:                      #      jeżeli warstwa jest punktowa i w grupie jest tylko jeden obiekt..
@@ -551,28 +551,28 @@ class ModelList(QAbstractListModel):
     Model dla okien z listami atrybutów.
     Dane przechowywane na liście: [ (typ atrybutu, nazwa, id), ... ]
     """
-        
+
     def __init__(self, oknoGlowne, parent=None):
-            
+
         super(ModelList, self).__init__(parent)
         self.dane = []
         self.oknoGlowne = oknoGlowne
         self.obliczenia = Obliczenia(self)
-        
-        
-    def rowCount(self, parent=QModelIndex): 
+
+
+    def rowCount(self, parent=QModelIndex):
         return len(self.dane)
-        
-        
+
+
     def data(self, indeks, rola=Qt.DisplayRole):
         if not indeks.isValid() or not 0 <= indeks.row() < self.rowCount():
             return None#QVariant()
-            
+
         wiersz = indeks.row()
-            
+
         if rola == Qt.DisplayRole:
             return self.dane[wiersz][1]
-            
+
         #elif rola == Qt.ForegroundRole:
         #    if self.dane[wiersz][0] == 'geometria':
         #        kolor = QColor(0,255,0)
@@ -582,10 +582,10 @@ class ModelList(QAbstractListModel):
         #        kolor = QColor(150,150,150)
         #    else:
         #        kolor = QColor(0,0,0)   # 'atrybutyLicz'
-        #        
+        #
         #    pedzel = QBrush(kolor)
         #    return pedzel
-        
+
         elif rola == Qt.DecorationRole:
             if self.dane[wiersz][0] == 'geometria':
                 ikona = QIcon(":/plugins/groupstats/icons/geom.png")
@@ -595,44 +595,44 @@ class ModelList(QAbstractListModel):
                 ikona = QIcon(":/plugins/groupstats/icons/alpha.png")
             else:
                 ikona = QIcon(":/plugins/groupstats/icons/digits.png")
-            
+
             return ikona
-            
+
         return None#QVariant()
-        
-        
+
+
     def mimeTypes(self):
         return ['application/x-groupstats-polaL', 'application/x-groupstats-polaWK', 'application/x-groupstats-polaW']
-        
-        
+
+
     def supportedDragActions(self):
         return Qt.MoveAction
-        
-        
+
+
     def supportedDropActions(self):
         return Qt.MoveAction
-        
-        
+
+
     def insertRows(self, wiersz, liczba, indeks, dane):
         self.beginInsertRows(indeks, wiersz, wiersz+liczba-1)
         for n in range(liczba):
             self.dane.insert(wiersz+n, dane[n])
         self.endInsertRows()
         return True
-        
-        
+
+
     def removeRows(self, wiersz, liczba, indeks):
         self.beginRemoveRows(indeks, wiersz, wiersz+liczba-1)
         del self.dane[wiersz:wiersz+liczba]
         self.endRemoveRows()
         return True
-        
-        
+
+
     def mimeData(self, indeksy, typMime='application/x-groupstats-polaL'):
         daneMime = QMimeData()
         dane = QByteArray()
-        strumien = QDataStream(dane, QIODevice.WriteOnly)    
-            
+        strumien = QDataStream(dane, QIODevice.WriteOnly)
+
         for indeks in indeksy:
             wiersz = indeks.row()
             stringg = pickle.dumps(self.dane[wiersz][2])
@@ -642,32 +642,32 @@ class ModelList(QAbstractListModel):
             strumien.writeBytes(bytes(self.dane[wiersz][0], 'utf-8') if isinstance(self.dane[wiersz][0], str) else bytes(self.dane[wiersz][0]))
             strumien.writeBytes(bytes(self.dane[wiersz][1], 'utf-8') if isinstance(self.dane[wiersz][1], str) else bytes(self.dane[wiersz][1]))
             strumien.writeInt16(self.dane[wiersz][2])
-            
+
         daneMime.setData(typMime, dane)
-        
+
         return daneMime
-        
-        
+
+
     def flags(self, indeks):
         flagi = super(ModelList, self).flags(indeks)
-            
+
         if indeks.isValid():
             return flagi | Qt.ItemIsDragEnabled | Qt.ItemIsEnabled | Qt.ItemIsSelectable
         else:
             return Qt.ItemIsDropEnabled
-    
+
 
 
 class ModelWiK(ModelList):
     """
     Model dla okien z listami pól dla wierszy i kolumn
     """
-        
+
     def __init__(self, parent):
-        
+
         super(ModelWiK, self).__init__(parent)
         self.dane = []
-        
+
 
     def setData(self, indeks, wartosc):
         self.dane.insert(indeks,wartosc)
@@ -678,10 +678,10 @@ class ModelWiK(ModelList):
         self.modelWiK = modelWiK.dane
         self.modelWartosci = modelWartosci.dane
 
-    
+
     def mimeData(self, indeksy):
         return super(ModelWiK, self).mimeData(indeksy, 'application/x-groupstats-polaWK')
-    
+
     def dropMimeData(self, daneMime, akcja, wiersz, kolumna, indeks):
         if daneMime.hasFormat('application/x-groupstats-polaL'):
             typDanych = 'application/x-groupstats-polaL'
@@ -691,7 +691,7 @@ class ModelWiK(ModelList):
             typDanych = 'application/x-groupstats-polaW'
         else:
             return False
-            
+
         dane = daneMime.data(typDanych)
         strumien = QDataStream(dane, QIODevice.ReadOnly)
         daneWy = []
@@ -701,7 +701,7 @@ class ModelWiK(ModelList):
             #strumien >> typ >> nazwa
             typ = strumien.readBytes().decode('utf-8')
             nazwa = strumien.readBytes().decode('utf-8')
-            id = strumien.readInt16()     
+            id = strumien.readInt16()
             pole = (typ, nazwa, id)
             daneWKiW = self.modelWiK+self.modelWartosci
             if typ=='obliczenia' and typ in [x[0] for x in daneWKiW] and typDanych == 'application/x-groupstats-polaL':
@@ -716,11 +716,11 @@ class ModelWiK(ModelList):
             elif typ=='obliczenia' and id not in self.obliczenia.listaText and 'atrybutyTxt' in [x[0] for x in self.modelWartosci]:  #nazwa != self.obliczenia.lista[0][0]
                 self.oknoGlowne.statusBar().showMessage(QCoreApplication.translate('GroupStats','For the text value function can only be one of (%s)' % self.obliczenia.nazwyText),15000)
                 return False
-                
+
             daneWy.append(pole)
-            
+
         self.insertRows(wiersz, len(daneWy), indeks, daneWy)
-            
+
         return True
 
 
@@ -728,9 +728,9 @@ class ModelWartosci(ModelList):
     """
     Model dla okna z wartosciami do obliczenia
     """
-        
+
     def __init__(self, parent=None):
-        
+
         super(ModelWartosci, self).__init__(parent)
         self.dane = []
 
@@ -738,7 +738,7 @@ class ModelWartosci(ModelList):
         return super(ModelWartosci, self).mimeData(indeksy, 'application/x-groupstats-polaW')
 
     def dropMimeData(self, daneMime, akcja, wiersz, kolumna, indeks):
-        
+
         if daneMime.hasFormat('application/x-groupstats-polaL'):
             typDanych = 'application/x-groupstats-polaL'
         elif daneMime.hasFormat('application/x-groupstats-polaWK'):
@@ -747,7 +747,7 @@ class ModelWartosci(ModelList):
             typDanych = 'application/x-groupstats-polaW'
         else:
             return False
-            
+
         dane = daneMime.data(typDanych)
         strumien = QDataStream(dane, QIODevice.ReadOnly)
         daneWy = []
@@ -778,14 +778,14 @@ class ModelWartosci(ModelList):
             elif typ=='atrybutyTxt' and len([x for x in daneWiK if (x[0]=='obliczenia' and x[2] not in self.obliczenia.listaText)])>0:
                 self.oknoGlowne.statusBar().showMessage(QCoreApplication.translate('GroupStats','For the text value function can only be one of (%s)' % self.obliczenia.nazwyText),15000)
                 return False
-        
+
             daneWy.append(pole)
-        
+
         self.insertRows(wiersz, len(daneWy), indeks, daneWy)
-                
+
 
         # sprawdzic: co jeśli przy usuwaniu zostanie tylko pole obliczeniowe albo pole wartosci
-        
+
 
         return True
 
@@ -798,21 +798,21 @@ class ModelListaPol(ModelList):
     """
     Model dla okna z listą dostępnych pól
     """
-        
+
     def __init__(self, parent=None):
-        
+
         super(ModelListaPol, self).__init__(parent)
         #self.ustawDane(slownikPol)
         self.dane = []
-        
 
-     
+
+
     def dropMimeData(self, daneMime, akcja, wiersz, kolumna, indeks):
         return True
 
-        
+
     def removeRows(self, wiersz, liczba, indeks):
-        
+
         return True
 
 
@@ -820,20 +820,20 @@ class ModelWyniki(QAbstractTableModel):     # gotowe
     """
     Model dla okna z wynikami obliczeń
     """
-        
+
     def __init__(self, dane, wiersze, kolumny, warstwa, parent=None):
         super(ModelWyniki, self).__init__(parent)
         self.dane = dane
         self.wiersze = wiersze
         self.kolumny = kolumny
         self.warstwa = warstwa
-           
+
         self.offsetX = max(1,len(wiersze[0]))                                           # Przesunięcie współrzednych tak, aby dane zaczynały się od 0,0
         self.offsetY = max(1,len(kolumny[0]))
-            
+
         if len(wiersze[0]) != 0 and len(kolumny[0]) != 0:                               # Przesunięcie o jeden wiersz (pusty) aby zrobić miejsce na nazwy wierszy
                 self.offsetY += 1
-        
+
     def columnCount(self,parent=QModelIndex()):
         if len(self.wiersze[0])>0 and len(self.kolumny[0])>0:
             l = len(self.kolumny)+len(self.wiersze[0])-1
@@ -843,19 +843,19 @@ class ModelWyniki(QAbstractTableModel):     # gotowe
             l = len(self.kolumny)
         else:
             l = 2
-    
+
         return l #max(len(self.wiersze[0])+1,len(self.kolumny)+len(self.wiersze[0]))
-     
+
     def rowCount(self, parent=QModelIndex()):
         return max(2,len(self.wiersze)+len(self.kolumny[0]))
-        
+
     def data(self, indeks, rola=Qt.DisplayRole):
         if not indeks.isValid() or not 0 <= indeks.row() < self.rowCount():
             return None
-            
+
         wiersz = indeks.row() - self.offsetY
         kolumna = indeks.column() - self.offsetX
-            
+
         if rola == Qt.DisplayRole:
             if wiersz >=0 and kolumna >=0:                                      # Dane
                 return self.dane[wiersz][kolumna][0]
@@ -871,7 +871,7 @@ class ModelWyniki(QAbstractTableModel):     # gotowe
                         return self.kolumny[kolumna+1][wiersz+1]                # opisy i nazwy kolumn jesli jest linia przerwy
                 else:
                     return self.kolumny[kolumna+1][wiersz]                      # opisy i nazwy kolumn jesli nie ma linii przerwy
-        
+
         elif rola == Qt.UserRole:
             if wiersz >=0 and kolumna >=0:                                      # Dane
                 return self.dane[wiersz][kolumna][1]
@@ -884,13 +884,13 @@ class ModelWyniki(QAbstractTableModel):     # gotowe
                 return "wiersz"
             elif wiersz >=0 and kolumna >=0:
                 return "dane"
-            
+
         elif rola == Qt.BackgroundRole:                                         # Wypełnienie komórek
             if wiersz<0 or kolumna<0:                                           # szare dla komórek z opisami i nazwami
-                kolor = QColor(245,235,235)        
+                kolor = QColor(245,235,235)
                 pedzel = QBrush(kolor)
                 return pedzel
-        
+
         elif rola == Qt.TextAlignmentRole:
             if kolumna < 0 and wiersz < -1 and len(self.wiersze[0]) != 0:
                 return Qt.AlignRight | Qt.AlignVCenter
@@ -898,28 +898,28 @@ class ModelWyniki(QAbstractTableModel):     # gotowe
                 return Qt.AlignHCenter | Qt.AlignVCenter
             elif kolumna >= 0 and wiersz >= 0:
                 return Qt.AlignRight | Qt.AlignVCenter
-        
+
         elif rola == Qt.FontRole:
             if wiersz<0 and kolumna<0:
                 czcionka = QFont()
                 czcionka.setBold(True)
                 #czcionka.setItalic(True)
                 return czcionka
-            
+
         return None#QVariant()
-    
+
     def sort(self, kolumna, tryb):
         """
         Sortuje tabelę wyników według wybranej kolumny
         kolumna - numer kolumny
         tryb - 1-malejąco, inne-rosnąco
         """
-            
+
         if len(self.wiersze) == 1:                                              # Jeżeli jest tylko jeden wiersz, to nie ma co sortować
-            return                                                          
-            
+            return
+
         tmp = []                                                                # Tymczasowa lista na posortowaną kolumnę
-            
+
         if kolumna >= self.offsetX:                                             # Wybranie danych do sortowania
             for n, d in enumerate(self.dane):                                   # n-numer wiersza przed stortowniem, d-dane w wierszu
                 tmp.append((n,d[kolumna-self.offsetX][0]))
@@ -934,12 +934,12 @@ class ModelWyniki(QAbstractTableModel):     # gotowe
                         test = True
                 else:
                     test = False
-                
+
                 if test:
                     tmp.append((n,liczba))
                 else:
                     tmp.append((n,d[kolumna]))
-            
+
         tmp.sort(key=lambda x: x[1])                                            # sortowanie rosnąco
         if tryb==1:                                                             # sortowanie malejąco
             tmp.reverse()
@@ -949,28 +949,28 @@ class ModelWyniki(QAbstractTableModel):     # gotowe
         wiersze2=tuple(self.wiersze)                                            # Tymczasowa krotka z opisami wierszy
         self.wiersze=[]
         self.wiersze.append(wiersze2[0])                                        # Dodanie nazw wierszy (tylko nazwy, bez opisów wierszy)
-            
+
         for i in tmp:                                                           # Ułożenie wszystkich danych i opisów wierszy wg tymczasowej listy sortowania
             self.dane.append(dane2[i[0]])
             self.wiersze.append(wiersze2[i[0]+1])
-            
+
         topLeft = self.createIndex(0,0)                                         # Sygnał zmiany danych
         bottomRight = self.createIndex(self.rowCount(), self.columnCount())
         self.dataChanged.emit(topLeft, bottomRight)
 
-        
+
     def sortRows(self, wiersz, tryb):
         """
         Sortuje tabelę wyników według wybranego wiersza
         wiersz - numer wiersza
         tryb - 1-malejąco, inne-rosnąco
         """
-            
+
         if len(self.kolumny) == 1:                                              # Jeżeli jest tylko jedna kolumna, to nie ma co sortować
             return                                                              # (self.kolumny są wtedy następującą listą [(),])
-            
+
         tmp = []                                                                # Tymczasowa lista na posortowany wiersz
-            
+
         if wiersz >= self.offsetY:                                              # Wybranie danych do sortowania
             for n, d in enumerate(self.dane[wiersz-self.offsetY]):              # n-numer kolumny przed stortowniem, d-dane w kolumnie
                 tmp.append((n,d[0]))
@@ -985,31 +985,31 @@ class ModelWyniki(QAbstractTableModel):     # gotowe
                         test = True
                 else:
                     test = False
-                
+
                 if test:
                     tmp.append((n,liczba))
                 else:
                     tmp.append((n,d[wiersz]))
-            
+
         tmp.sort(key=lambda x: x[1])                                    # sortowanie rosnąco
         if tryb==1:                                                             # sortowanie malejąco
             tmp.reverse()
-            
+
         dane2 = tuple(self.dane)                                                # Tymczasowa krotka ze wszystkomi danymi
         self.dane=[]
         kolumny2=tuple(self.kolumny)                                            # Tymczasowa krotka z opisami kolumn
         self.kolumny=[]
         self.kolumny.append(kolumny2[0])                                        # Dodanie nazw kolumn (tylko nazwy, bez opisów kolumn)
-            
+
         for j in dane2:                                                         # Ułożenie wszystkich danych wg tymczasowej listy sortowania
             wiersz = []
             for i in tmp:
                 wiersz.append(j[i[0]])
             self.dane.append(tuple(wiersz))
-            
+
         for i in tmp:                                                           # Ułożenie opisów kolumn wg tymczasowej listy sortowania
             self.kolumny.append(kolumny2[i[0]+1])
-            
+
         topLeft = self.createIndex(0,0)                                         # Sygnał zmiany danych
         bottomRight = self.createIndex(self.rowCount(), self.columnCount())
         self.dataChanged.emit(topLeft, bottomRight)
@@ -1019,17 +1019,17 @@ class OknoWyniki(QTableView):
     """
     Okno z wynikami obliczeń
     """
-        
+
     def __init__(self, parent=None):
         super(OknoWyniki, self).__init__(parent)
-        
+
         self.setSortingEnabled(True)
         self.setObjectName("wyniki")
         self.verticalHeader().setSortIndicatorShown(True)
-        
+
         self.clicked.connect(self.zaznaczWszystko)
-        
-        
+
+
     def selectionCommand (self, indeks, event=None ):
         """
         Implementacja oryginalnej metody - dodaje zaznaczanie całych wierszy i kolumn gdy zaznaczono nagłówek tabeli
@@ -1042,8 +1042,8 @@ class OknoWyniki(QTableView):
             return flagi | QItemSelectionModel.Columns
         else:
             return flagi
-        
-        
+
+
     def zaznaczWszystko (self,indeks):
         """
         Zaznacznie lub odznaczanie wszystkich danych po kliknięciu w narożniku tabeli
@@ -1061,7 +1061,7 @@ class Obliczenia(QObject):                   # gotowe
     """
     Klasa zawierająca funkcje dokonujące obliczeń statystycznych
     """
-        
+
     def __init__(self, parent):                                                                            # Lista z ID, nazwą i funkcją obliczająca
         super(Obliczenia, self).__init__(parent)
                                                                                                             # Nie zmieniać ID funkcji! (są używane do warunków)
@@ -1074,33 +1074,33 @@ class Obliczenia(QObject):                   # gotowe
                         6:(QCoreApplication.translate('Obliczenia','min'), self.minimum),
                         7:(QCoreApplication.translate('Obliczenia','max'), self.maksimum),
                         8:(QCoreApplication.translate('Obliczenia','unique'), self.unikalne) }
-        
+
         self.listaText = (0,8)                                                                        # Obliczenia działające również na tekście
-        
+
         self.nazwyText = ''
         for i in self.listaText:
             self.nazwyText = self.nazwyText + self.lista[i][0] + ', '
-        
+
         self.nazwyText = self.nazwyText[:-2]
-        
+
     def liczebnosc(self, wyniki):
         return len(wyniki)
-        
+
     def suma(self, wyniki):
         return sum(wyniki)
-        
+
     def srednia(self, wyniki):
         return self.suma(wyniki)/self.liczebnosc(wyniki)
-        
+
     def wariancja(self, wyniki):
         wariancja = 0
         for x in wyniki:
             wariancja = wariancja + (x-self.srednia(wyniki))**2
         return wariancja/self.liczebnosc(wyniki)
-        
+
     def odchylenie(self, wyniki):
         return sqrt(self.wariancja(wyniki))
-        
+
     def mediana(self, wyniki):
         wyniki.sort()
         liczebnosc = self.liczebnosc(wyniki)
@@ -1113,13 +1113,13 @@ class Obliczenia(QObject):                   # gotowe
             else:
                 mediana = wyniki[pozycja]
         return mediana
-        
+
     def minimum(self, wyniki):
         return min(wyniki)
-        
+
     def maksimum(self, wyniki):
         return max(wyniki)
-    
+
     def unikalne(self, wyniki):
         return len(set(wyniki))
-    
+

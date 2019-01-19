@@ -1,6 +1,6 @@
 PLUGINNAME = $(shell basename $(PWD))
 VERSION = $(shell sed -n 's/version=//p' metadata.txt)
-ZIPFILE = $(HOME)/$(PLUGINNAME)-$(VERSION).zip
+ZIPFILE = $(HOME)/$(PLUGINNAME).$(VERSION).zip
 .PHONY: help pylint pep8 zip doc
 
 help:
