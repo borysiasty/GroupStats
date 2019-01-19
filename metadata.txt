@@ -29,6 +29,7 @@ author=Rajmund Szostok. Migrated to QGIS 3 by Borys Jurgiel and Faunalia.
 email=qgis@borysjurgiel.pl
 
 changelog=
+    2.1.4    Fix Qlonglong/Integer64 regarded as text (issue #4)
     2.1.3    Fix non working median calculation
     2.1.2    Add Frech tranlation. Patch by Sylvain POULAIN.
     2.1.1    Minor fixes
