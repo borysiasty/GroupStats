@@ -125,17 +125,12 @@ class GroupStatsDialog(QMainWindow):
         idWarstwy = self.ui.warstwa.itemData(indeks)
         warstwa = QgsProject.instance().mapLayer(idWarstwy)#.toString())
 
-        warstwaTemp = QgsVectorLayer(warstwa.source(), warstwa.name(), warstwa.providerType())
-        warstwaTemp.setCrs(warstwa.crs())
+        provider = warstwa.dataProvider()
+        request = QgsFeatureRequest()
         filtr = self.ui.filtr.toPlainText()
-        filtrWarstwy = warstwa.subsetString()
-        if filtrWarstwy == '' and filtr != '':
-            warstwaTemp.setSubsetString (filtr)
-        elif filtrWarstwy != '' and filtr != '':
-            warstwaTemp.setSubsetString ('(%s) and (%s)' % (filtr, filtrWarstwy))
-
-        provider = warstwaTemp.dataProvider()
-        iterator = provider.getFeatures()
+        if filtr:
+            request.setFilterExpression(filtr)
+        iterator = provider.getFeatures(request)
 
         if self.ui.tylkoZaznaczone.isChecked():                                         # Pobranie ID zaznaczonych obiektów
             zaznaczoneObiekty = warstwa.selectedFeatureIds()
