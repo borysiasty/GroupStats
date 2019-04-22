@@ -327,6 +327,7 @@ class GroupStatsDialog(QMainWindow):
             except AttributeError:
                 pass
 
+            self.ui.wyniki.setModel(None)
             self.statusBar().showMessage(QCoreApplication.translate('GroupStats','No data found.'), 10000)
 
 
