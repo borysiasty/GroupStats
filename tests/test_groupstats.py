@@ -20,6 +20,7 @@ class TestGroupStats(object):
         self.values_model = self.gs.dlg.tm4
         self.showScore = 'showScore'
         self.actionSaveCSV = 'actionSaveCSV'
+        self.data_var = 'data'
 
     def create_vectorlayer(self):
         #self.vlayer = QgsVectorLayer(providerLib="memory")
@@ -81,7 +82,7 @@ class TestGroupStats(object):
     def test_1(self):
         #gsd = GroupStatsDialog()
         #print(str(self.gs.ui.listHalf))
-        for idx, value in enumerate(self.gs.dlg.tm1.data):
+        for idx, value in enumerate(getattr(self.gs.dlg.tm1, self.data_var)):
             print("{} {}".format(str(idx), str(value)))
         #print(self.gs.dlg.tm1.data)
         cols_index = self.all.createIndex(0, 0)
@@ -93,10 +94,10 @@ class TestGroupStats(object):
         rows_data = self.all.mimeData([rows_index])
         values_data = self.all.mimeData([values_index])
         sum_data = self.all.mimeData([sum_index])
-        self.columns_model.dropMimeData(dataMime=cols_data, share=None, rows=0, column=0, index=QModelIndex())
-        self.rows_model.dropMimeData(dataMime=rows_data, share=None, rows=0, column=0, index=QModelIndex())
-        self.values_model.dropMimeData(dataMime=sum_data, share=None, rows=0, column=0, index=QModelIndex())
-        self.values_model.dropMimeData(dataMime=values_data, share=None, rows=0, column=0, index=QModelIndex())
+        self.columns_model.dropMimeData(cols_data, None, 0, 0, QModelIndex())
+        self.rows_model.dropMimeData(rows_data, None, 0, 0, QModelIndex())
+        self.values_model.dropMimeData(sum_data, None, 0, 0, QModelIndex())
+        self.values_model.dropMimeData(values_data, None, 0, 0, QModelIndex())
 
         getattr(self.gs.dlg, self.showScore)()
 

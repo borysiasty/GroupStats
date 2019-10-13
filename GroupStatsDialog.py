@@ -108,7 +108,7 @@ class GroupStatsDialog(QMainWindow):
         chosenRows = tuple(self.tm2.data)                                               # Reading selected rows from the window
         chosenColumns = tuple(self.tm3.data)                                               # Reading selected columns from the window
         chosenValues = tuple(self.tm4.data)                                          # Reading from the window chosenj values ​​and calculations
-
+        print("chosen: " + str(chosenValues))
         value = [x for x in chosenValues if x[0]!='calculations'][0]                 # reading the field that has been chosen for calculation (can only be one)
         if value[0]=='geometry':                                                         # Setting the calculate function depending on the chosen value type
             if value[2]==1:
