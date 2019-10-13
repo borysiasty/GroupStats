@@ -108,7 +108,6 @@ class GroupStatsDialog(QMainWindow):
         chosenRows = tuple(self.tm2.data)                                               # Reading selected rows from the window
         chosenColumns = tuple(self.tm3.data)                                               # Reading selected columns from the window
         chosenValues = tuple(self.tm4.data)                                          # Reading from the window chosenj values ​​and calculations
-        print("chosen: " + str(chosenValues))
         value = [x for x in chosenValues if x[0]!='calculations'][0]                 # reading the field that has been chosen for calculation (can only be one)
         if value[0]=='geometry':                                                         # Setting the calculate function depending on the chosen value type
             if value[2]==1:
@@ -181,10 +180,9 @@ class GroupStatsDialog(QMainWindow):
                         key_row.append(newRowKey)
 
                 key = ( tuple(key_row) , tuple(key_column) )                                 # key to identify object groups
-
                 valueToCalculate = valueFunction(f)
                 if valueToCalculate!=None or self.ui.useNULL.isChecked():
-                    if  valueToCalculate==None:
+                    if valueToCalculate==None:
                         NULLcounter += 1
                         if value[0]=='countAttributes':
                             valueToCalculate=0
@@ -211,13 +209,12 @@ class GroupStatsDialog(QMainWindow):
             kolu.add(z[1])
         rows = list(topmost)                                                                # list of unique row keys
         column = list(kolu)                                                                # list of unique column keys
-
         rowDictionary={}                                                                      # Creating dictionaries for rows and columns (faster search)
         for nr, row in enumerate(rows):
             rowDictionary[row]=nr
         columnDictionary={}
-        for nr, column in enumerate(column):
-            columnDictionary[column]=nr
+        for nr, col in enumerate(column):
+            columnDictionary[col]=nr
 
         calculations = [[x[2] for x in chosenValues if x[0]=='calculations'],         # list of selected calculations in values, rows and columns
                       [x[2] for x in chosenRows      if x[0]=='calculations'],
@@ -233,9 +230,6 @@ class GroupStatsDialog(QMainWindow):
         data = []                                                                           # Creating an empty array for the date (l.row x l.column)
         for x in range( max( len(rows) , len(rows)*len(calculations[1]))):
             data.append(max(len(column),len(column)*len(calculations[2]))*[('',())])
-
-        print("result: {} rowDictionary {} calculation {} ".format(str(result), str(rowDictionary), str(calculation)))
-        print("self.calculations.list: " + str(self.calculations.list))
         for x in keys:                                                                    # Calculation of values ​​for all keys
             nrw = rowDictionary[x[0]]                                                         # rows no in the data table for the chosen key
             nrk = columnDictionary[x[1]]                                                          # column number in the data table for the chosen key
@@ -250,7 +244,6 @@ class GroupStatsDialog(QMainWindow):
         atr = {}                                                                            # Attributes as dict.
         for i in range(provider.fields().count()):
             atr[i] = provider.fields().at(i)
-
         rowNames=[]                                                                     # List with names of rows
         for x in chosenRows:
             if x[0]=='geometry':
@@ -263,7 +256,6 @@ class GroupStatsDialog(QMainWindow):
                 colNames.append(x[1])
             elif x[0]!='calculations':
                 colNames.append(atr[x[2]].name())
-
         nameColumnsCalculations=()                                                              # Insert row and column names with calculations
         nameRowsCalculation=()
         if len(calculations[1])>0:
@@ -279,6 +271,7 @@ class GroupStatsDialog(QMainWindow):
         else:
             column1 = column
             rows1 = rows
+
         if len(rows1)>0 and len(rows1[0])>0:
             rows1.insert(0,tuple(rowNames)+nameRowsCalculation)
         if len(column1)>0 and len(column1[0])>0:
@@ -465,17 +458,17 @@ class GroupStatsDialog(QMainWindow):
             self.saveFileData(data)
 
     def saveFileData (self, data):
-        "Obsługa zapisu danych do pliku"
-        fileWindow = QFileDialog()                                              # Wybór pliku do zapisu
+        "Support for writing data to a file"
+        fileWindow = QFileDialog()                                              # Select file to write
         fileWindow.setAcceptMode(1)
         fileWindow.setDefaultSuffix("csv")
         fileWindow.setNameFilters(["CSV files (*.csv)", "All files (*)"])
-        if fileWindow.exec_() == 0:                                             # Nie wybrano żadnego pliku - wyjście
+        if fileWindow.exec_() == 0:                                             # No file selected - output
             return
         fileName = fileWindow.selectedFiles()[0]
-        _file = open(fileName, 'w')                                           # Otwarcie pliku do zapisu
+        _file = open(fileName, 'w')                                            # Open file for writing
         csvfile = csv.writer( _file, delimiter=';' )
-        for i in data:                                                          # Kopiowanie danych z tabeli
+        for i in data:                                                          # Copying data from the table
             #csvfile.writerow([bytes(x, 'utf-8') for x in i])
             csvfile.writerow(i)
         _file.close()
@@ -735,7 +728,6 @@ class ValueModel(ModelList):
         return super(ValueModel, self).mimeData(indexy, 'application/x-groupstats-polaW')
 
     def dropMimeData(self, dataMime, share, rows, column, index):
-
         if dataMime.hasFormat('application/x-groupstats-polaL'):
             dataType = 'application/x-groupstats-polaL'
         elif dataMime.hasFormat('application/x-groupstats-polaWK'):
@@ -749,7 +741,6 @@ class ValueModel(ModelList):
         stream = QDataStream(data, QIODevice.ReadOnly)
         outData = []
         while not stream.atEnd():
-
             #typ = '2'#QString()-------------------------------------????????????????????????????
             #name = '2'#QString()-------------------------------------?????????????????????
             #stream >> typ >> name
@@ -757,7 +748,6 @@ class ValueModel(ModelList):
             name = stream.readBytes().decode('utf-8')
             id = stream.readInt16()
             field = (typ, name, id)
-
             allData = self.modelRows+self.modelColumns+self.data
             dataWiK = self.modelRows+self.modelColumns
             if len(self.data)>=2:
@@ -780,10 +770,7 @@ class ValueModel(ModelList):
 
         self.insertRows(rows, len(outData), index, outData)
 
-
-        # sprawdzic: co jeśli przy usuwaniu zostanie only pole calculateeniowe albo pole values
-
-
+        # check: what if only the calculateacyjne field or the field values ​​are left when deleting
         return True
 
     def setOtherModels(self, modelRows, modelColumns):

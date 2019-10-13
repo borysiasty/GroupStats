@@ -29,9 +29,9 @@ from PyQt5.QtWidgets import QAction, QMessageBox
 
 from qgis.core import *
 
-from . import resources_rc
+#from . import resources_rc
 
-from .GroupStatsDialog import GroupStatsDialog
+from GroupStatsDialog import GroupStatsDialog
 
 
 class GroupStats:
