@@ -373,7 +373,6 @@ class GroupStatsDialog(QMainWindow):
 
         for i in range(fields.count()):
             field = fields.at(i)
-            print("Field name {} type {}".format(str(field.name()), str(field.typeName())))
             if field.typeName().upper() in ('REAL', 'FLOAT4', 'DOUBLE') or field.typeName().upper().startswith('INT'):
                 dictionary['countAttributes'].append((field.name(), i))
             else:
@@ -563,13 +562,13 @@ class ModelList(QAbstractListModel):
         return len(self.data)
 
 
-    def data(self, index, rola=Qt.DisplayRole):
+    def data(self, index, role=Qt.DisplayRole):
         if not index.isValid() or not 0 <= index.row() < self.rowCount():
             return None#QVariant()
 
         rows = index.row()
 
-        if rola == Qt.DisplayRole:
+        if role == Qt.DisplayRole:
             return self.data[rows][1]
 
         #elif rola == Qt.ForegroundRole:
@@ -585,7 +584,7 @@ class ModelList(QAbstractListModel):
         #    pedzel = QBrush(kolor)
         #    return pedzel
 
-        elif rola == Qt.DecorationRole:
+        elif role == Qt.DecorationRole:
             if self.data[rows][0] == 'geometry':
                 icon = QIcon(":/plugins/groupstats/icons/geom.png")
             elif self.data[rows][0] == 'calculations':
@@ -628,18 +627,19 @@ class ModelList(QAbstractListModel):
 
 
     def mimeData(self, indexy, typMime='application/x-groupstats-polaL'):
+        print("Indexy:" + str(type(indexy)) + " value: " + str(indexy))
         dataMime = QMimeData()
         data = QByteArray()
         stream = QDataStream(data, QIODevice.WriteOnly)
         for index in indexy:
-            rows = index.row()
-            stringg = pickle.dumps(self.data[rows][2])
+            row = index.row()
+            stringg = pickle.dumps(self.data[row][2])
             #stream << self.data[rows][0][0] << self.data[rows][1][0]    #----------------------------- ???????[0]poprawic
             # Datatypes below happen to be strings or already bytes! (b'geometry', b'calculations' or b'attributeTxt' - maybe reused?)
 
-            stream.writeBytes(bytes(self.data[rows][0], 'utf-8') if isinstance(self.data[rows][0], str) else bytes(self.data[rows][0]))
-            stream.writeBytes(bytes(self.data[rows][1], 'utf-8') if isinstance(self.data[rows][1], str) else bytes(self.data[rows][1]))
-            stream.writeInt16(self.data[rows][2])
+            stream.writeBytes(bytes(self.data[row][0], 'utf-8') if isinstance(self.data[row][0], str) else bytes(self.data[row][0]))
+            stream.writeBytes(bytes(self.data[row][1], 'utf-8') if isinstance(self.data[row][1], str) else bytes(self.data[row][1]))
+            stream.writeInt16(self.data[row][2])
 
         dataMime.setData(typMime, data)
 
@@ -690,7 +690,7 @@ class ModelWiK(ModelList):
             return False
 
         data = dataMime.data(dataType)
-        print("Data: " + str(data))
+
         stream = QDataStream(data, QIODevice.ReadOnly)
         outData = []
         while not stream.atEnd():
@@ -760,7 +760,7 @@ class ValueModel(ModelList):
             typ = stream.readBytes().decode('utf-8')
             name = stream.readBytes().decode('utf-8')
             id = stream.readInt16()
-            pole = (typ, name, id)
+            field = (typ, name, id)
 
             allData = self.modelRows+self.modelColumns+self.data
             dataWiK = self.modelRows+self.modelColumns
@@ -780,7 +780,7 @@ class ValueModel(ModelList):
                 self.mainWindow.statusBar().showMessage(QCoreApplication.translate('GroupStats','For the text value function can only be one of (%s)' % self.calculations.textNames), 15000)
                 return False
 
-            outData.append(pole)
+            outData.append(field)
 
         self.insertRows(rows, len(outData), index, outData)
 
