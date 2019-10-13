@@ -1,6 +1,9 @@
 from qgis.core import QgsProject, QgsVectorLayer, QgsField, QgsFeature, QgsFields
 from PyQt5.QtCore import QVariant
-from GroupStatsDialog import GroupStatsDialog
+import mock
+#from GroupStatsDialog import GroupStatsDialog
+from groupstats import GroupStats
+
 
 class TestGroupStats(object):
     def setUp(self):
@@ -47,6 +50,7 @@ class TestGroupStats(object):
         feature_ids = [feature.id() for feature in features]
 
         QgsProject.instance().addMapLayer(self.vlayer)
+
         hide_print = True
         if not hide_print:
             print("1. Valid vlayer '{}'".format(self.vlayer.isValid()))
@@ -56,10 +60,17 @@ class TestGroupStats(object):
             print("7. QgsVectorLayer.getFeatures(): " + str([x.id() for x in self.vlayer.getFeatures(feature_ids)]))
             print("8. QgsVectorLayer.featureCount(): " + str(self.vlayer.featureCount()))
 
+        root = QgsProject.instance().layerTreeRoot()
+        root.addLayer(self.vlayer)
+
 
     def test_1(self):
-        gsd = GroupStatsDialog()
+        #gsd = GroupStatsDialog()
+        mock_iface = mock.Mock
+        gs = GroupStats(mock_iface)
+        gs.run()
 
+        #print("text: " + str(gsd.ui.layer.currentText()))
         assert False
 
     def tearDown(self):
