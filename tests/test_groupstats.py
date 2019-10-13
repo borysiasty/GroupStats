@@ -1,6 +1,7 @@
 from qgis.core import QgsProject, QgsVectorLayer, QgsField, QgsFeature, QgsFields
 from PyQt5.QtCore import QVariant, QModelIndex
 import mock
+import io
 #from GroupStatsDialog import GroupStatsDialog
 from groupstats import GroupStats
 
@@ -17,6 +18,8 @@ class TestGroupStats(object):
         self.rows_model = self.gs.dlg.tm2
         self.columns_model = self.gs.dlg.tm3
         self.values_model = self.gs.dlg.tm4
+        self.showScore = 'showScore'
+        self.actionSaveCSV = 'actionSaveCSV'
 
     def create_vectorlayer(self):
         #self.vlayer = QgsVectorLayer(providerLib="memory")
@@ -95,7 +98,20 @@ class TestGroupStats(object):
         self.values_model.dropMimeData(dataMime=sum_data, share=None, rows=0, column=0, index=QModelIndex())
         self.values_model.dropMimeData(dataMime=values_data, share=None, rows=0, column=0, index=QModelIndex())
 
-        self.gs.dlg.ui.calculate.click()
+        getattr(self.gs.dlg, self.showScore)()
+
+        @mock.patch("PyQt5.QtWidgets.QMessageBox.information")
+        @mock.patch("PyQt5.QtWidgets.QFileDialog")
+        @mock.patch("builtins.open")
+        def savefile(dlg, mock_open, mock_qfiledialog, mock_messagebox):
+            mock_qfiledialog.return_value.exec_.return_value = 1
+            mock_qfiledialog.return_value.selectedFiles = ['filename']
+            f = io.StringIO()
+            mock_open.return_value = f
+            getattr(dlg.ui, self.actionSaveCSV).trigger()
+            f.close()
+            print(str(mock_messagebox.mock_calls))
+        savefile(self.gs.dlg)
         #print("text: " + str(gsd.ui.layer.currentText()))
         assert False
 

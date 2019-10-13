@@ -24,9 +24,9 @@ class GroupStatsDialog(QMainWindow):
         self.ui = FORM_CLASS()
         self.ui.setupUi(self)
 
-        self.ui.results = WindowResults(self.ui.centralwidget)
+        self.ui.result = WindowResults(self.ui.centralwidget)
 
-        self.ui.horizontalLayout.addWidget(self.ui.results)
+        self.ui.horizontalLayout.addWidget(self.ui.result)
 
         self.calculations = Calculations(self)
 
@@ -80,7 +80,7 @@ class GroupStatsDialog(QMainWindow):
         self.ui.actionShowOnMap.triggered.connect(self.showOnMap)   # Layer selection signal
         self.ui.actionTutorial.triggered.connect(self.showTutorial)   # Layer selection signal
 
-        self.ui.results.verticalHeader().sortIndicatorChanged.connect(self.sortRows)   # Layer selection signal
+        self.ui.result.verticalHeader().sortIndicatorChanged.connect(self.sortRows)   # Layer selection signal
 
 
     def sortRows(self,rows,mode):
@@ -105,7 +105,6 @@ class GroupStatsDialog(QMainWindow):
 
     def showScore(self):               #finished
         "Performs calculations and sends them for display"
-
         chosenRows = tuple(self.tm2.data)                                               # Reading selected rows from the window
         chosenColumns = tuple(self.tm3.data)                                               # Reading selected columns from the window
         chosenValues = tuple(self.tm4.data)                                          # Reading from the window chosenj values ​​and calculations
@@ -454,7 +453,7 @@ class GroupStatsDialog(QMainWindow):
             schowek.setText(text)
 
     def exportToCSV (self):
-        "Zapisuje wszystkie data do pliku CSV"
+        "Saves all data to CSV file"
         data, test = self.downloadDataFromTheTable(True, False)
         if test==True:
             self.saveFileData(data)
@@ -627,7 +626,6 @@ class ModelList(QAbstractListModel):
 
 
     def mimeData(self, indexy, typMime='application/x-groupstats-polaL'):
-        print("Indexy:" + str(type(indexy)) + " value: " + str(indexy))
         dataMime = QMimeData()
         data = QByteArray()
         stream = QDataStream(data, QIODevice.WriteOnly)
@@ -702,9 +700,7 @@ class ModelWiK(ModelList):
             id = stream.readInt16()
             field = (typ, name, id)
             dataWKiW = self.modelWiK+self.valueModel
-            print("typ: " + str(typ))
-            print("Field: " + str(field))
-            print("self.calculations.textList: " + str(self.calculations.textList))
+
             if typ=='calculations' and typ in [x[0] for x in dataWKiW] and dataType == 'application/x-groupstats-polaL':
                 self.mainWindow.statusBar().showMessage(QCoreApplication.translate('GroupStats','Function can be droped in only one area'),15000)
                 return False
