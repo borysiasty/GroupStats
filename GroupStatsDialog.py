@@ -50,11 +50,11 @@ class GroupStatsDialog(QMainWindow):
         self.tm1 = ModelListaPol(self)
         self.ui.listHalf.setModel(self.tm1)
 
-        self.tm2 = ModelWiK(self)
+        self.tm2 = ModelRowsColumns(self)
         #tm2.ustawInneModele(tm1)
         self.ui.rows.setModel(self.tm2)
 
-        self.tm3 = ModelWiK(self)
+        self.tm3 = ModelRowsColumns(self)
         #tm3.ustawInneModele(tm1)
         self.ui.column.setModel(self.tm3)
 
@@ -230,6 +230,7 @@ class GroupStatsDialog(QMainWindow):
         data = []                                                                           # Creating an empty array for the date (l.row x l.column)
         for x in range( max( len(rows) , len(rows)*len(calculations[1]))):
             data.append(max(len(column),len(column)*len(calculations[2]))*[('',())])
+        #print("Keys: " + str(keys))
         for x in keys:                                                                    # Calculation of values ​​for all keys
             nrw = rowDictionary[x[0]]                                                         # rows no in the data table for the chosen key
             nrk = columnDictionary[x[1]]                                                          # column number in the data table for the chosen key
@@ -429,7 +430,7 @@ class GroupStatsDialog(QMainWindow):
 
         self.ui._filter.setPlainText(q.searchString ())                                       # Wstawienie zapytania do okna
 
-    # ------------------------ KOPIOWANIE DANYCH DO SCHOWKA I ZAPIS CSV ----------------------------START
+    # ------------------------ COPYING DATA TO THE CLIPBOARD AND CSV SAVE ----------------------------START
 
     def duplication (self):
         "Kopiowanie wszystkich danych do schowka"
@@ -452,7 +453,7 @@ class GroupStatsDialog(QMainWindow):
             self.saveFileData(data)
 
     def exportMarkedToCSV (self):
-        "Zapisuje zaznaczone data do pliku CSV"
+        "Saves selected data to a CSV file"
         data, test = self.downloadDataFromTheTable(False, False)
         if test==True:
             self.saveFileData(data)
@@ -486,7 +487,8 @@ class GroupStatsDialog(QMainWindow):
         rows = []
         column = []
 
-        if allData == False:                                                               # Jeśli opcja 'only zaznaczone' pobranie indexów zaznaczonych pól
+        if allData == False:                                                               # If the option 'only checked' get indexes of selected fields
+            print("Here1")
             indexList = self.ui.result.selectedIndexes()
             if len(indexList)==0:
                 QMessageBox.information(None,QCoreApplication.translate('GroupStats','Information'), \
@@ -646,14 +648,14 @@ class ModelList(QAbstractListModel):
             return Qt.ItemIsDropEnabled
 
 
-class ModelWiK(ModelList):
+class ModelRowsColumns(ModelList):
     """
     Model dla okien z listami pól dla row i kolumn
     """
 
     def __init__(self, parent):
 
-        super(ModelWiK, self).__init__(parent)
+        super(ModelRowsColumns, self).__init__(parent)
         self.data = []
 
 
@@ -668,7 +670,7 @@ class ModelWiK(ModelList):
 
 
     def mimeData(self, indexy):
-        return super(ModelWiK, self).mimeData(indexy, 'application/x-groupstats-polaWK')
+        return super(ModelRowsColumns, self).mimeData(indexy, 'application/x-groupstats-polaWK')
 
     def dropMimeData(self, dataMime, share, rows, column, index):
         if dataMime.hasFormat('application/x-groupstats-polaL'):
@@ -800,7 +802,7 @@ class ModelListaPol(ModelList):
 
 class ResultModel(QAbstractTableModel):     # finished
     """
-    Model dla okna z wynikami calculations
+    Model for the window with calculation results
     """
 
     def __init__(self, data, rows, column, layer, parent=None):
@@ -999,7 +1001,7 @@ class ResultModel(QAbstractTableModel):     # finished
 
 class WindowResults(QTableView):
     """
-    Okno z wynikami calculations
+    Window with calculation results
     """
 
     def __init__(self, parent=None):
@@ -1017,6 +1019,8 @@ class WindowResults(QTableView):
         Implementation of the original method - adds selection of entire rows and columns when the table header is selected
         """
         flag = super(WindowResults, self).selectionCommand (index, event)        # calling the original method
+        print("Modeltype: " + str(type(self.model)))
+        print("self.model().data: " + str(type(self.model().data)))
         test = self.model().data(index, Qt.UserRole+1)                         # checking the selected cell type
         if test == "rows":
             return flag | QItemSelectionModel.Rows
