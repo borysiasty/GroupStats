@@ -88,9 +88,9 @@ class GroupStatsDialog(QMainWindow):
 
 
     def blockCalculations(self, x, y, z): #finished
-        values = self.tm4.data
-        column = self.tm3.data
-        rows = self.tm2.data
+        values = self.tm4._data
+        column = self.tm3._data
+        rows = self.tm2._data
         # If the value field has numbers (attributes or geometry) and some calculate function has been selected
         if  ('geometry' in [a[0] for a in values] or 'countAttributes' in [a[0] for a in values]) and\
             'calculations' in [a[0] for a in values+rows+column]:
@@ -105,9 +105,9 @@ class GroupStatsDialog(QMainWindow):
 
     def showScore(self):               #finished
         "Performs calculations and sends them for display"
-        chosenRows = tuple(self.tm2.data)                                               # Reading selected rows from the window
-        chosenColumns = tuple(self.tm3.data)                                               # Reading selected columns from the window
-        chosenValues = tuple(self.tm4.data)                                          # Reading from the window chosenj values ​​and calculations
+        chosenRows = tuple(self.tm2._data)                                               # Reading selected rows from the window
+        chosenColumns = tuple(self.tm3._data)                                               # Reading selected columns from the window
+        chosenValues = tuple(self.tm4._data)                                          # Reading from the window chosenj values ​​and calculations
         value = [x for x in chosenValues if x[0]!='calculations'][0]                 # reading the field that has been chosen for calculation (can only be one)
         if value[0]=='geometry':                                                         # Setting the calculate function depending on the chosen value type
             if value[2]==1:
@@ -230,7 +230,7 @@ class GroupStatsDialog(QMainWindow):
         data = []                                                                           # Creating an empty array for the date (l.row x l.column)
         for x in range( max( len(rows) , len(rows)*len(calculations[1]))):
             data.append(max(len(column),len(column)*len(calculations[2]))*[('',())])
-        #print("Keys: " + str(keys))
+
         for x in keys:                                                                    # Calculation of values ​​for all keys
             nrw = rowDictionary[x[0]]                                                         # rows no in the data table for the chosen key
             nrk = columnDictionary[x[1]]                                                          # column number in the data table for the chosen key
@@ -488,7 +488,6 @@ class GroupStatsDialog(QMainWindow):
         column = []
 
         if allData == False:                                                               # If the option 'only checked' get indexes of selected fields
-            print("Here1")
             indexList = self.ui.result.selectedIndexes()
             if len(indexList)==0:
                 QMessageBox.information(None,QCoreApplication.translate('GroupStats','Information'), \
@@ -547,13 +546,13 @@ class ModelList(QAbstractListModel):
     def __init__(self, mainWindow, parent=None):
 
         super(ModelList, self).__init__(parent)
-        self.data = []
+        self._data = []
         self.mainWindow = mainWindow
         self.calculations = Calculations(self)
 
 
     def rowCount(self, parent=QModelIndex):
-        return len(self.data)
+        return len(self._data)
 
 
     def data(self, index, role=Qt.DisplayRole):
@@ -563,7 +562,7 @@ class ModelList(QAbstractListModel):
         rows = index.row()
 
         if role == Qt.DisplayRole:
-            return self.data[rows][1]
+            return self._data[rows][1]
 
         #elif rola == Qt.ForegroundRole:
         #    if self.data[rows][0] == 'geometry':
@@ -579,11 +578,11 @@ class ModelList(QAbstractListModel):
         #    return pedzel
 
         elif role == Qt.DecorationRole:
-            if self.data[rows][0] == 'geometry':
+            if self._data[rows][0] == 'geometry':
                 icon = QIcon(":/plugins/groupstats/icons/geom.png")
-            elif self.data[rows][0] == 'calculations':
+            elif self._data[rows][0] == 'calculations':
                 icon = QIcon(":/plugins/groupstats/icons/calc.png")
-            elif self.data[rows][0] == 'attributeTxt':
+            elif self._data[rows][0] == 'attributeTxt':
                 icon = QIcon(":/plugins/groupstats/icons/alpha.png")
             else:
                 icon = QIcon(":/plugins/groupstats/icons/digits.png")
@@ -608,14 +607,14 @@ class ModelList(QAbstractListModel):
     def insertRows(self, rows, number, index, data):
         self.beginInsertRows(index, rows, rows + number - 1)
         for n in range(number):
-            self.data.insert(rows+n, data[n])
+            self._data.insert(rows + n, data[n])
         self.endInsertRows()
         return True
 
 
     def removeRows(self, rows, number, index):
         self.beginRemoveRows(index, rows, rows+number-1)
-        del self.data[rows:rows+number]
+        del self._data[rows:rows + number]
         self.endRemoveRows()
         return True
 
@@ -626,13 +625,13 @@ class ModelList(QAbstractListModel):
         stream = QDataStream(data, QIODevice.WriteOnly)
         for index in indexy:
             row = index.row()
-            stringg = pickle.dumps(self.data[row][2])
+            stringg = pickle.dumps(self._data[row][2])
             #stream << self.data[rows][0][0] << self.data[rows][1][0]    #----------------------------- ???????[0]poprawic
             # Datatypes below happen to be strings or already bytes! (b'geometry', b'calculations' or b'attributeTxt' - maybe reused?)
 
-            stream.writeBytes(bytes(self.data[row][0], 'utf-8') if isinstance(self.data[row][0], str) else bytes(self.data[row][0]))
-            stream.writeBytes(bytes(self.data[row][1], 'utf-8') if isinstance(self.data[row][1], str) else bytes(self.data[row][1]))
-            stream.writeInt16(self.data[row][2])
+            stream.writeBytes(bytes(self._data[row][0], 'utf-8') if isinstance(self._data[row][0], str) else bytes(self._data[row][0]))
+            stream.writeBytes(bytes(self._data[row][1], 'utf-8') if isinstance(self._data[row][1], str) else bytes(self._data[row][1]))
+            stream.writeInt16(self._data[row][2])
 
         dataMime.setData(typMime, data)
 
@@ -656,17 +655,17 @@ class ModelRowsColumns(ModelList):
     def __init__(self, parent):
 
         super(ModelRowsColumns, self).__init__(parent)
-        self.data = []
+        self._data = []
 
 
     def setData(self, index, value):
-        self.data.insert(index,value)
+        self._data.insert(index, value)
         return True
 
 
     def setOtherModels(self, modelWiK, valueModel):
-        self.modelWiK = modelWiK.data
-        self.valueModel = valueModel.data
+        self.modelWiK = modelWiK._data
+        self.valueModel = valueModel._data
 
 
     def mimeData(self, indexy):
@@ -699,7 +698,7 @@ class ModelRowsColumns(ModelList):
             if typ=='calculations' and typ in [x[0] for x in dataWKiW] and dataType == 'application/x-groupstats-polaL':
                 self.mainWindow.statusBar().showMessage(QCoreApplication.translate('GroupStats','Function can be droped in only one area'),15000)
                 return False
-            elif (field in self.modelWiK or field in self.data) and dataType in ['application/x-groupstats-polaL', 'application/x-groupstats-polaW']:
+            elif (field in self.modelWiK or field in self._data) and dataType in ['application/x-groupstats-polaL', 'application/x-groupstats-polaW']:
                 self.mainWindow.statusBar().showMessage(QCoreApplication.translate('GroupStats','This field has already been droped'),15000)
                 return False
             #elif (typ != 'calculations' and 'calculations' in [x[0] for x in self.data]) or (typ=='calculations' and len([x for x in self.data if (x[0] != 'calculations')])>0):
@@ -724,7 +723,7 @@ class ValueModel(ModelList):
     def __init__(self, parent=None):
 
         super(ValueModel, self).__init__(parent)
-        self.data = []
+        self._data = []
 
     def mimeData(self, indexy):
         return super(ValueModel, self).mimeData(indexy, 'application/x-groupstats-polaW')
@@ -750,18 +749,18 @@ class ValueModel(ModelList):
             name = stream.readBytes().decode('utf-8')
             id = stream.readInt16()
             field = (typ, name, id)
-            allData = self.modelRows+self.modelColumns+self.data
+            allData = self.modelRows+self.modelColumns+self._data
             dataWiK = self.modelRows+self.modelColumns
-            if len(self.data)>=2:
+            if len(self._data)>=2:
                 self.mainWindow.statusBar().showMessage(QCoreApplication.translate('GroupStats',"Area 'Value' may contain a maximum of two entries"),15000)
                 return False
             elif typ=='calculations' and typ in [x[0] for x in allData] and dataType == 'application/x-groupstats-polaL':
                 self.mainWindow.statusBar().showMessage(QCoreApplication.translate('GroupStats','Function can be droped in only one area'),15000)
                 return False
-            elif len(self.data)==1 and typ != 'calculations' and self.data[0][0] != 'calculations':
+            elif len(self._data)==1 and typ != 'calculations' and self._data[0][0] != 'calculations':
                 self.mainWindow.statusBar().showMessage(QCoreApplication.translate('GroupStats',"In the area 'Value' one of the items must be a function"),15000)
                 return False
-            elif len(self.data)==1 and ((typ=='attributeTxt' and self.data[0][2] not in self.calculations.textList) or (id not in self.calculations.textList and self.data[0][0] == 'attributeTxt')):
+            elif len(self._data)==1 and ((typ == 'attributeTxt' and self._data[0][2] not in self.calculations.textList) or (id not in self.calculations.textList and self._data[0][0] == 'attributeTxt')):
                 self.mainWindow.statusBar().showMessage(QCoreApplication.translate('GroupStats','For the text value function can only be one of (%s)' % self.calculations.textNames), 15000)
                 return False
             elif typ=='attributeTxt' and len([x for x in dataWiK if (x[0]=='calculations' and x[2] not in self.calculations.textList)])>0:
@@ -776,8 +775,8 @@ class ValueModel(ModelList):
         return True
 
     def setOtherModels(self, modelRows, modelColumns):
-        self.modelRows = modelRows.data
-        self.modelColumns = modelColumns.data
+        self.modelRows = modelRows._data
+        self.modelColumns = modelColumns._data
 
 
 class ModelListaPol(ModelList):
@@ -807,7 +806,7 @@ class ResultModel(QAbstractTableModel):     # finished
 
     def __init__(self, data, rows, column, layer, parent=None):
         super(ResultModel, self).__init__(parent)
-        self.data = data
+        self._data = data
         self.rows = rows
         self.column = column
         self.layer = layer
@@ -833,16 +832,16 @@ class ResultModel(QAbstractTableModel):     # finished
     def rowCount(self, parent=QModelIndex()):
         return max(2,len(self.rows)+len(self.column[0]))
 
-    def data(self, index, rola=Qt.DisplayRole):
+    def data(self, index, role=Qt.DisplayRole):
         if not index.isValid() or not 0 <= index.row() < self.rowCount():
             return None
 
         rows = index.row() - self.offsetY
         column = index.column() - self.offsetX
 
-        if rola == Qt.DisplayRole:
+        if role == Qt.DisplayRole:
             if rows >=0 and column >=0:                                      # Dane
-                return self.data[rows][column][0]
+                return self._data[rows][column][0]
             elif column < 0 and rows >= 0 and len(self.rows[0])>0:        # opisy row
                 return self.rows[rows+1][column]
             elif rows == -1 and column <0 and len(self.rows[0])>0:        # nazwy row
@@ -856,11 +855,11 @@ class ResultModel(QAbstractTableModel):     # finished
                 else:
                     return self.column[column+1][rows]                      # opisy i nazwy kolumn jesli nie ma linii przerwy
 
-        elif rola == Qt.UserRole:
+        elif role == Qt.UserRole:
             if rows >=0 and column >=0:                                      # Dane
-                return self.data[rows][column][1]
+                return self._data[rows][column][1]
 
-        elif rola == Qt.UserRole+1:
+        elif role == Qt.UserRole+1:
             #print "user role+1"
             if rows <0 and column >=0:                                      # column, rows, czy data
                 return "column"
@@ -869,13 +868,13 @@ class ResultModel(QAbstractTableModel):     # finished
             elif rows >=0 and column >=0:
                 return "data"
 
-        elif rola == Qt.BackgroundRole:                                         # Wypełnienie komórek
+        elif role == Qt.BackgroundRole:                                         # Wypełnienie komórek
             if rows<0 or column<0:                                           # szare dla komórek z opisami i nazwami
-                kolor = QColor(245,235,235)
-                pedzel = QBrush(kolor)
-                return pedzel
+                colour = QColor(245,235,235)
+                brush = QBrush(colour)
+                return brush
 
-        elif rola == Qt.TextAlignmentRole:
+        elif role == Qt.TextAlignmentRole:
             if column < 0 and rows < -1 and len(self.rows[0]) != 0:
                 return Qt.AlignRight | Qt.AlignVCenter
             elif column >= 0 and rows < 0:
@@ -883,12 +882,12 @@ class ResultModel(QAbstractTableModel):     # finished
             elif column >= 0 and rows >= 0:
                 return Qt.AlignRight | Qt.AlignVCenter
 
-        elif rola == Qt.FontRole:
+        elif role == Qt.FontRole:
             if rows<0 and column<0:
-                czcionka = QFont()
-                czcionka.setBold(True)
-                #czcionka.setItalic(True)
-                return czcionka
+                font = QFont()
+                font.setBold(True)
+                #font.setItalic(True)
+                return font
 
         return None#QVariant()
 
@@ -905,7 +904,7 @@ class ResultModel(QAbstractTableModel):     # finished
         tmp = []                                                                # Tymczasowa lista na posortowaną kolumnę
 
         if column >= self.offsetX:                                             # Wybranie danych do sortowania
-            for n, d in enumerate(self.data):                                   # n-numer rowsa przed stortowniem, d-data w rowsu
+            for n, d in enumerate(self._data):                                   # n-numer rowsa przed stortowniem, d-data w rowsu
                 tmp.append((n,d[column-self.offsetX][0]))
         else:                                                                   # lub nazw row
             for n, d in enumerate(self.rows[1:]):                            # n-numer rowsa przed stortowniem, d-opis rowsa
@@ -928,14 +927,14 @@ class ResultModel(QAbstractTableModel):     # finished
         if mode==1:                                                             # sortowanie malejąco
             tmp.reverse()
 
-        data2 = tuple(self.data)                                                # Tymczasowa krotka ze wszystkomi danymi
-        self.data=[]
+        data2 = tuple(self._data)                                                # Tymczasowa krotka ze wszystkomi danymi
+        self._data=[]
         rows2=tuple(self.rows)                                            # Tymczasowa krotka z opisami row
         self.rows=[]
         self.rows.append(rows2[0])                                        # Dodanie nazw row (only nazwy, bez opisów row)
 
         for i in tmp:                                                           # Ułożenie wszystkich danych i opisów row wg tymczasowej listy sortowania
-            self.data.append(data2[i[0]])
+            self._data.append(data2[i[0]])
             self.rows.append(rows2[i[0]+1])
 
         topLeft = self.createIndex(0,0)                                         # Sygnał zmiany danych
@@ -956,7 +955,7 @@ class ResultModel(QAbstractTableModel):     # finished
         tmp = []                                                                # Tymczasowa lista na posortowany rows
 
         if rows >= self.offsetY:                                              # Wybranie danych do sortowania
-            for n, d in enumerate(self.data[rows-self.offsetY]):              # n-numer column przed stortowniem, d-data w kolumnie
+            for n, d in enumerate(self._data[rows - self.offsetY]):              # n-numer column przed stortowniem, d-data w kolumnie
                 tmp.append((n,d[0]))
         else:                                                                   # lub nazw kolumn
             for n, d in enumerate(self.column[1:]):                            # n-numer column przed stortowniem, d-opis column
@@ -979,8 +978,8 @@ class ResultModel(QAbstractTableModel):     # finished
         if mode==1:                                                             # sortowanie malejąco
             tmp.reverse()
 
-        data2 = tuple(self.data)                                                # Tymczasowa krotka ze wszystkomi danymi
-        self.data=[]
+        data2 = tuple(self._data)                                                # Tymczasowa krotka ze wszystkomi danymi
+        self._data=[]
         column2=tuple(self.column)                                            # Tymczasowa krotka z opisami kolumn
         self.column=[]
         self.column.append(column2[0])                                        # Dodanie nazw kolumn (only nazwy, bez opisów kolumn)
@@ -989,7 +988,7 @@ class ResultModel(QAbstractTableModel):     # finished
             rows = []
             for i in tmp:
                 rows.append(j[i[0]])
-            self.data.append(tuple(rows))
+            self._data.append(tuple(rows))
 
         for i in tmp:                                                           # Ułożenie opisów kolumn wg tymczasowej listy sortowania
             self.column.append(column2[i[0]+1])
@@ -1019,8 +1018,6 @@ class WindowResults(QTableView):
         Implementation of the original method - adds selection of entire rows and columns when the table header is selected
         """
         flag = super(WindowResults, self).selectionCommand (index, event)        # calling the original method
-        print("Modeltype: " + str(type(self.model)))
-        print("self.model().data: " + str(type(self.model().data)))
         test = self.model().data(index, Qt.UserRole+1)                         # checking the selected cell type
         if test == "rows":
             return flag | QItemSelectionModel.Rows
@@ -1030,7 +1027,7 @@ class WindowResults(QTableView):
             return flag
 
 
-    def selectAll (self,index):
+    def selectAll(self, index):
         """
         Zaznacznie lub odznaczanie wszystkich danych po kliknięciu w narożniku tabeli
         """

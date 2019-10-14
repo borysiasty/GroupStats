@@ -730,6 +730,9 @@ class TestGroupStats(object):
             mock_exec.return_value = 1
             getattr(self.gs.dlg, self.showScore)()
             self.result_table.selectRow(0)
+            self.result_table.selectRow(1)
+            self.result_table.selectRow(2)
+
             mock_file = mock.MagicMock(spec=TextIOBase)
             mock_open.return_value = mock_file
             getattr(dlg.ui, self.actionSaveCSVSelected).trigger()
