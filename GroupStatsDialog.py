@@ -489,6 +489,7 @@ class GroupStatsDialog(QMainWindow):
 
         if allData == False:                                                               # If the option 'only checked' get indexes of selected fields
             indexList = self.ui.result.selectedIndexes()
+            print(str(indexList))
             if len(indexList)==0:
                 QMessageBox.information(None,QCoreApplication.translate('GroupStats','Information'), \
                     QCoreApplication.translate('GroupStatsD','No data selected'))
@@ -1018,6 +1019,8 @@ class WindowResults(QTableView):
         Implementation of the original method - adds selection of entire rows and columns when the table header is selected
         """
         flag = super(WindowResults, self).selectionCommand (index, event)        # calling the original method
+        print(str(flag))
+        print("index:" + str(index) + " " + str(index.row()) + " " + str(index.data()))
         test = self.model().data(index, Qt.UserRole+1)                         # checking the selected cell type
         if test == "rows":
             return flag | QItemSelectionModel.Rows
