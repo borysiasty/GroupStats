@@ -325,20 +325,20 @@ class GroupStatsDialog(QMainWindow):
 
         index = self.ui.layer.currentIndex()
         if index !=-1:
-            layerId = self.ui.layer.itemData(index)                        # id wcześniej chosenj layer
+            layerId = self.ui.layer.itemData(index)                        # id of the previously selected layer
 
         self.ui.layer.blockSignals(True)
-        self.ui.layer.clear()                                                 # wypełnienie comboBoxa nową listą warstw
+        self.ui.layer.clear()                                            # fill the comboBox with a new list of layers
         layer.sort(key=lambda x: x[0].lower())
         for i in layer:
             self.ui.layer.addItem(i[0], i[1])
 
         if index !=-1:
-            index2 = self.ui.layer.findData(layerId)                       # jeżeli wcześniej wybrana layer jest to liście to wybranie jej
+            index2 = self.ui.layer.findData(layerId)                       # if the previously selected layer is a list then select it
             if index2 !=-1:
                 self.ui.layer.setCurrentIndex(index2)
             else:
-                self.layerSelection(0)                                            # jeśli nie ma to wybranie pierwszej
+                self.layerSelection(0)                                            # if it doesn't have the first one
         else:
             self.layerSelection(0)
         self.ui.layer.blockSignals(False)
@@ -401,7 +401,7 @@ class GroupStatsDialog(QMainWindow):
 
 
     def clearChoice(self):             # finished
-        " Czyści okna z wybranymi rowsami, columnmi i wartościami"
+        " Clears windows with selected rows, columns and values"
         self.tm2.removeRows(0, self.tm2.rowCount() ,QModelIndex())
         self.tm3.removeRows(0, self.tm3.rowCount() ,QModelIndex())
         self.tm4.removeRows(0, self.tm4.rowCount() ,QModelIndex())
@@ -411,7 +411,7 @@ class GroupStatsDialog(QMainWindow):
     def showControlPanel(self):     # finished
         ""
 
-        self.ui.panelSterowania.setVisible(True)
+        self.ui.controlPanel.setVisible(True)
 
     def showTutorial(self):
         url = "http://underdark.wordpress.com/2013/02/02/group-stats-tutorial/"

@@ -51,7 +51,7 @@
      <string>Feat&amp;ures</string>
     </property>
     <addaction name="actionShowOnMap"/>
-    <addaction name="actionPolaczSelectedObiekty"/>
+    <addaction name="actionLinkSelectedObjects"/>
    </widget>
    <addaction name="menuData"/>
    <addaction name="menuFeatures"/>
@@ -59,7 +59,7 @@
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <widget class="QDockWidget" name="panelSterowania">
+  <widget class="QDockWidget" name="controlPanel">
    <property name="enabled">
     <bool>true</bool>
    </property>
@@ -470,7 +470,7 @@ p, li { white-space: pre-wrap; }
     <string>&amp;Tutorial</string>
    </property>
   </action>
-  <action name="actionPolaczSelectedObiekty">
+  <action name="actionLinkSelectedObjects">
    <property name="enabled">
     <bool>false</bool>
    </property>
