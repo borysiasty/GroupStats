@@ -992,7 +992,7 @@ class ResultModel(QAbstractTableModel):     # finished
         for i in tmp:                                                           # Ułożenie opisów kolumn wg tymczasowej listy sortowania
             self.column.append(column2[i[0]+1])
 
-        topLeft = self.createIndex(0,0)                                         # Sygnał zmiany danych
+        topLeft = self.createIndex(0,0)                                         # Data change signal
         bottomRight = self.createIndex(self.rowCount(), self.columnCount())
         self.dataChanged.emit(topLeft, bottomRight)
 
@@ -1014,10 +1014,10 @@ class WindowResults(QTableView):
 
     def selectionCommand (self, index, event=None ):
         """
-        Implementacja oryginalnej metody - dodaje zaznaczanie całych row i kolumn gdy zaznaczono nagłówek tabeli
+        Implementation of the original method - adds selection of entire rows and columns when the table header is selected
         """
-        flag = super(WindowResults, self).selectionCommand (index, event)        # wywołanie oryginalnej metody
-        test = self.model().data(index, Qt.UserRole+1)                         # sprawdzenie typu zaznaczonej komórki
+        flag = super(WindowResults, self).selectionCommand (index, event)        # calling the original method
+        test = self.model().data(index, Qt.UserRole+1)                         # checking the selected cell type
         if test == "rows":
             return flag | QItemSelectionModel.Rows
         elif test == "column":
@@ -1043,7 +1043,7 @@ class Calculations(QObject):                   # finished
     A class that suppresses functions that perform statistical calculations
     """
 
-    def __init__(self, parent):                                                                            # Lista z ID, nazwą i funkcją calculateająca
+    def __init__(self, parent):                                                                     # List with ID, name and calculating function
         super(Calculations, self).__init__(parent)
 
                                                                                                     # Do not change the function ID! (used for conditions)

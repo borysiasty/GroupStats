@@ -1,4 +1,4 @@
-from qgis.core import QgsProject, QgsVectorLayer, QgsField, QgsFeature, QgsFields
+from qgis.core import QgsProject, QgsVectorLayer, QgsField, QgsFeature, QgsFields, QgsGeometry
 from PyQt5.QtCore import QVariant, QModelIndex
 import mock
 from mock import call
@@ -6,12 +6,25 @@ from io import TextIOBase
 from groupstats import GroupStats
 
 class TestGroupStats(object):
+    """
+    The tests only works with nose by chaning the rows in groupstats.py from:
+
+    from . import resources_rc
+
+    from .GroupStatsDialog import GroupStatsDialog
+
+    to
+
+    #from . import resources_rc   <-- Skip the import
+
+    from GroupStatsDialog import GroupStatsDialog <-- Remove the .
+    """
 
     def setUp(self):
         pass
 
-    def create_vectorlayer(self, _fields, data):
-        self.vlayer = QgsVectorLayer("Point?crs=epsg:4326", "test", "memory")
+    def create_vectorlayer(self, _fields, data, geometries=None, geomtype='Point'):
+        self.vlayer = QgsVectorLayer("{}?crs=epsg:4326".format(geomtype), "test", "memory")
         provider = self.vlayer.dataProvider()
 
         fields = QgsFields()
@@ -21,11 +34,14 @@ class TestGroupStats(object):
         provider.addAttributes(_fields)
         self.vlayer.updateFields()
         feats = []
-        for features_attributes in data:
+        for f_idx, features_attributes in enumerate(data):
             feature = QgsFeature(fields)
             for idx, attr in enumerate(features_attributes):
                 feature[_fields[idx].name()] = attr
-            feature.setGeometry(None)
+            if geometries:
+                feature.setGeometry(geometries[f_idx])
+            else:
+                feature.setGeometry(None)
             #print("Feature valid: " + str(feature.isValid()))
             feats.append(feature)
         provider.addFeatures(feats)
@@ -69,8 +85,8 @@ class TestGroupStats(object):
         self.create_vectorlayer(_fields, data)
         self.init_gs()
 
-        for idx, value in enumerate(getattr(self.gs.dlg.tm1, self.data_var)):
-            print("{} {}".format(str(idx), str(value)))
+        #for idx, value in enumerate(getattr(self.gs.dlg.tm1, self.data_var)):
+        #    print("{} {}".format(str(idx), str(value)))
 
         cols_index = self.all.createIndex(0, 0)
         rows_index = self.all.createIndex(2, 0)
@@ -102,7 +118,7 @@ class TestGroupStats(object):
             return mock_file
 
         mock_file = savefile(self.gs.dlg)
-        print(str(mock_file.mock_calls))
+        #print(str(mock_file.mock_calls))
 
         assert [call.write('cols;col1\r\n'),
                  call.write('rows;\r\n'),
@@ -121,22 +137,22 @@ class TestGroupStats(object):
         self.create_vectorlayer(_fields, data)
         self.init_gs()
 
-        for idx, value in enumerate(getattr(self.gs.dlg.tm1, self.data_var)):
-            print("{} {}".format(str(idx), str(value)))
+        #for idx, value in enumerate(getattr(self.gs.dlg.tm1, self.data_var)):
+        #    print("{} {}".format(str(idx), str(value)))
 
         cols_index = self.all.createIndex(0, 0)
         rows_index = self.all.createIndex(2, 0)
         values_index = self.all.createIndex(3, 0)
-        sum_index = self.all.createIndex(10, 0)
+        calc_index = self.all.createIndex(10, 0)
 
         cols_data = self.all.mimeData([cols_index])
         rows_data = self.all.mimeData([rows_index])
         values_data = self.all.mimeData([values_index])
-        sum_data = self.all.mimeData([sum_index])
+        calc_data = self.all.mimeData([calc_index])
 
         self.columns_model.dropMimeData(cols_data, None, 0, 0, QModelIndex())
         self.rows_model.dropMimeData(rows_data, None, 0, 0, QModelIndex())
-        self.values_model.dropMimeData(sum_data, None, 0, 0, self.values_model.index(0))
+        self.values_model.dropMimeData(calc_data, None, 0, 0, self.values_model.index(0))
         self.values_model.dropMimeData(values_data, None, 0, 0, self.values_model.index(0))
 
         @mock.patch("PyQt5.QtWidgets.QFileDialog.selectedFiles")
@@ -154,7 +170,7 @@ class TestGroupStats(object):
             return mock_file
 
         mock_file = savefile(self.gs.dlg)
-        print(str(mock_file.mock_calls))
+        #print(str(mock_file.mock_calls))
 
         assert [call.write('cols;col1\r\n'),
                  call.write('rows;\r\n'),
@@ -162,5 +178,520 @@ class TestGroupStats(object):
                  call.write('row2;7.0\r\n'),
                  call.close()] in mock_file.mock_calls
 
+    def test_average(self):
+        _fields = [QgsField('id', QVariant.Int, QVariant.typeToName(QVariant.Int)),
+                   QgsField('rows', QVariant.String, QVariant.typeToName(QVariant.Int)),
+                   QgsField('cols', QVariant.String, QVariant.typeToName(QVariant.Int)),
+                   QgsField('values', QVariant.Double, QVariant.typeToName(QVariant.Int))]
+        data = [[1, 'row1', 'col1', 1.0], [2, 'row1', 'col1', 2.0], [3, 'row2', 'col1', 3.0], [4, 'row2', 'col1', 4.0]]
+        self.create_vectorlayer(_fields, data)
+        self.init_gs()
+
+        #for idx, value in enumerate(getattr(self.gs.dlg.tm1, self.data_var)):
+        #    print("{} {}".format(str(idx), str(value)))
+
+        cols_index = self.all.createIndex(0, 0)
+        rows_index = self.all.createIndex(2, 0)
+        values_index = self.all.createIndex(3, 0)
+        calc_index = self.all.createIndex(4, 0)
+
+        cols_data = self.all.mimeData([cols_index])
+        rows_data = self.all.mimeData([rows_index])
+        values_data = self.all.mimeData([values_index])
+        calc_data = self.all.mimeData([calc_index])
+
+        self.columns_model.dropMimeData(cols_data, None, 0, 0, QModelIndex())
+        self.rows_model.dropMimeData(rows_data, None, 0, 0, QModelIndex())
+        self.values_model.dropMimeData(calc_data, None, 0, 0, self.values_model.index(0))
+        self.values_model.dropMimeData(values_data, None, 0, 0, self.values_model.index(0))
+
+        @mock.patch("PyQt5.QtWidgets.QFileDialog.selectedFiles")
+        @mock.patch('PyQt5.QtWidgets.QMainWindow.statusBar')
+        @mock.patch("PyQt5.QtWidgets.QMessageBox.information")
+        @mock.patch("PyQt5.QtWidgets.QFileDialog.exec_")
+        @mock.patch("builtins.open")
+        def savefile(dlg, mock_open, mock_exec, mock_messagebox, mock_statusbar, mock_selectedfile):
+            mock_selectedfile.return_value = ['noname']
+            mock_exec.return_value = 1
+            getattr(self.gs.dlg, self.showScore)()
+            mock_file = mock.MagicMock(spec=TextIOBase)
+            mock_open.return_value = mock_file
+            getattr(dlg.ui, self.actionSaveCSV).trigger()
+            return mock_file
+
+        mock_file = savefile(self.gs.dlg)
+        #print(str(mock_file.mock_calls))
+
+        assert [call.write('cols;col1\r\n'),
+                 call.write('rows;\r\n'),
+                 call.write('row1;1.5\r\n'),
+                 call.write('row2;3.5\r\n'),
+                 call.close()] in mock_file.mock_calls
+
+    def test_min(self):
+        _fields = [QgsField('id', QVariant.Int, QVariant.typeToName(QVariant.Int)),
+                   QgsField('rows', QVariant.String, QVariant.typeToName(QVariant.Int)),
+                   QgsField('cols', QVariant.String, QVariant.typeToName(QVariant.Int)),
+                   QgsField('values', QVariant.Double, QVariant.typeToName(QVariant.Int))]
+        data = [[1, 'row1', 'col1', 1.0], [2, 'row1', 'col1', 2.0], [3, 'row2', 'col1', 3.0], [4, 'row2', 'col1', 4.0]]
+        self.create_vectorlayer(_fields, data)
+        self.init_gs()
+
+        #for idx, value in enumerate(getattr(self.gs.dlg.tm1, self.data_var)):
+        #    print("{} {}".format(str(idx), str(value)))
+
+        cols_index = self.all.createIndex(0, 0)
+        rows_index = self.all.createIndex(2, 0)
+        values_index = self.all.createIndex(3, 0)
+        calc_index = self.all.createIndex(8, 0)
+
+        cols_data = self.all.mimeData([cols_index])
+        rows_data = self.all.mimeData([rows_index])
+        values_data = self.all.mimeData([values_index])
+        calc_data = self.all.mimeData([calc_index])
+
+        self.columns_model.dropMimeData(cols_data, None, 0, 0, QModelIndex())
+        self.rows_model.dropMimeData(rows_data, None, 0, 0, QModelIndex())
+        self.values_model.dropMimeData(calc_data, None, 0, 0, self.values_model.index(0))
+        self.values_model.dropMimeData(values_data, None, 0, 0, self.values_model.index(0))
+
+        @mock.patch("PyQt5.QtWidgets.QFileDialog.selectedFiles")
+        @mock.patch('PyQt5.QtWidgets.QMainWindow.statusBar')
+        @mock.patch("PyQt5.QtWidgets.QMessageBox.information")
+        @mock.patch("PyQt5.QtWidgets.QFileDialog.exec_")
+        @mock.patch("builtins.open")
+        def savefile(dlg, mock_open, mock_exec, mock_messagebox, mock_statusbar, mock_selectedfile):
+            mock_selectedfile.return_value = ['noname']
+            mock_exec.return_value = 1
+            getattr(self.gs.dlg, self.showScore)()
+            mock_file = mock.MagicMock(spec=TextIOBase)
+            mock_open.return_value = mock_file
+            getattr(dlg.ui, self.actionSaveCSV).trigger()
+            return mock_file
+
+        mock_file = savefile(self.gs.dlg)
+        #print(str(mock_file.mock_calls))
+
+        assert [call.write('cols;col1\r\n'),
+                 call.write('rows;\r\n'),
+                 call.write('row1;1.0\r\n'),
+                 call.write('row2;3.0\r\n'),
+                 call.close()] in mock_file.mock_calls
+
+    def test_max(self):
+        _fields = [QgsField('id', QVariant.Int, QVariant.typeToName(QVariant.Int)),
+                   QgsField('rows', QVariant.String, QVariant.typeToName(QVariant.Int)),
+                   QgsField('cols', QVariant.String, QVariant.typeToName(QVariant.Int)),
+                   QgsField('values', QVariant.Double, QVariant.typeToName(QVariant.Int))]
+        data = [[1, 'row1', 'col1', 1.0], [2, 'row1', 'col1', 2.0], [3, 'row2', 'col1', 3.0], [4, 'row2', 'col1', 4.0]]
+        self.create_vectorlayer(_fields, data)
+        self.init_gs()
+
+        #for idx, value in enumerate(getattr(self.gs.dlg.tm1, self.data_var)):
+        #    print("{} {}".format(str(idx), str(value)))
+
+        cols_index = self.all.createIndex(0, 0)
+        rows_index = self.all.createIndex(2, 0)
+        values_index = self.all.createIndex(3, 0)
+        calc_index = self.all.createIndex(6, 0)
+
+        cols_data = self.all.mimeData([cols_index])
+        rows_data = self.all.mimeData([rows_index])
+        values_data = self.all.mimeData([values_index])
+        calc_data = self.all.mimeData([calc_index])
+
+        self.columns_model.dropMimeData(cols_data, None, 0, 0, QModelIndex())
+        self.rows_model.dropMimeData(rows_data, None, 0, 0, QModelIndex())
+        self.values_model.dropMimeData(calc_data, None, 0, 0, self.values_model.index(0))
+        self.values_model.dropMimeData(values_data, None, 0, 0, self.values_model.index(0))
+
+        @mock.patch("PyQt5.QtWidgets.QFileDialog.selectedFiles")
+        @mock.patch('PyQt5.QtWidgets.QMainWindow.statusBar')
+        @mock.patch("PyQt5.QtWidgets.QMessageBox.information")
+        @mock.patch("PyQt5.QtWidgets.QFileDialog.exec_")
+        @mock.patch("builtins.open")
+        def savefile(dlg, mock_open, mock_exec, mock_messagebox, mock_statusbar, mock_selectedfile):
+            mock_selectedfile.return_value = ['noname']
+            mock_exec.return_value = 1
+            getattr(self.gs.dlg, self.showScore)()
+            mock_file = mock.MagicMock(spec=TextIOBase)
+            mock_open.return_value = mock_file
+            getattr(dlg.ui, self.actionSaveCSV).trigger()
+            return mock_file
+
+        mock_file = savefile(self.gs.dlg)
+        #print(str(mock_file.mock_calls))
+
+        assert [call.write('cols;col1\r\n'),
+                 call.write('rows;\r\n'),
+                 call.write('row1;2.0\r\n'),
+                 call.write('row2;4.0\r\n'),
+                 call.close()] in mock_file.mock_calls
+
+    def test_count(self):
+        _fields = [QgsField('id', QVariant.Int, QVariant.typeToName(QVariant.Int)),
+                   QgsField('rows', QVariant.String, QVariant.typeToName(QVariant.Int)),
+                   QgsField('cols', QVariant.String, QVariant.typeToName(QVariant.Int)),
+                   QgsField('values', QVariant.Double, QVariant.typeToName(QVariant.Int))]
+        data = [[1, 'row1', 'col1', 1.0], [2, 'row1', 'col1', 2.0], [3, 'row2', 'col1', 3.0]]
+        self.create_vectorlayer(_fields, data)
+        self.init_gs()
+
+        #for idx, value in enumerate(getattr(self.gs.dlg.tm1, self.data_var)):
+        #    print("{} {}".format(str(idx), str(value)))
+
+        cols_index = self.all.createIndex(0, 0)
+        rows_index = self.all.createIndex(2, 0)
+        values_index = self.all.createIndex(3, 0)
+        calc_index = self.all.createIndex(5, 0)
+
+        cols_data = self.all.mimeData([cols_index])
+        rows_data = self.all.mimeData([rows_index])
+        values_data = self.all.mimeData([values_index])
+        calc_data = self.all.mimeData([calc_index])
+
+        self.columns_model.dropMimeData(cols_data, None, 0, 0, QModelIndex())
+        self.rows_model.dropMimeData(rows_data, None, 0, 0, QModelIndex())
+        self.values_model.dropMimeData(calc_data, None, 0, 0, self.values_model.index(0))
+        self.values_model.dropMimeData(values_data, None, 0, 0, self.values_model.index(0))
+
+        @mock.patch("PyQt5.QtWidgets.QFileDialog.selectedFiles")
+        @mock.patch('PyQt5.QtWidgets.QMainWindow.statusBar')
+        @mock.patch("PyQt5.QtWidgets.QMessageBox.information")
+        @mock.patch("PyQt5.QtWidgets.QFileDialog.exec_")
+        @mock.patch("builtins.open")
+        def savefile(dlg, mock_open, mock_exec, mock_messagebox, mock_statusbar, mock_selectedfile):
+            mock_selectedfile.return_value = ['noname']
+            mock_exec.return_value = 1
+            getattr(self.gs.dlg, self.showScore)()
+            mock_file = mock.MagicMock(spec=TextIOBase)
+            mock_open.return_value = mock_file
+            getattr(dlg.ui, self.actionSaveCSV).trigger()
+            return mock_file
+
+        mock_file = savefile(self.gs.dlg)
+        #print(str(mock_file.mock_calls))
+
+        assert [call.write('cols;col1\r\n'),
+                 call.write('rows;\r\n'),
+                 call.write('row1;2\r\n'),
+                 call.write('row2;1\r\n'),
+                 call.close()] in mock_file.mock_calls
+
+    def test_median(self):
+        _fields = [QgsField('id', QVariant.Int, QVariant.typeToName(QVariant.Int)),
+                   QgsField('rows', QVariant.String, QVariant.typeToName(QVariant.Int)),
+                   QgsField('cols', QVariant.String, QVariant.typeToName(QVariant.Int)),
+                   QgsField('values', QVariant.Double, QVariant.typeToName(QVariant.Int))]
+        data = [[1, 'row1', 'col1', 1.0], [2, 'row1', 'col1', 2.0], [3, 'row2', 'col1', 3.0], [4, 'row2', 'col1', 4.0],
+                [5, 'row2', 'col1', 8.0]]
+        self.create_vectorlayer(_fields, data)
+        self.init_gs()
+
+        #for idx, value in enumerate(getattr(self.gs.dlg.tm1, self.data_var)):
+        #    print("{} {}".format(str(idx), str(value)))
+
+        cols_index = self.all.createIndex(0, 0)
+        rows_index = self.all.createIndex(2, 0)
+        values_index = self.all.createIndex(3, 0)
+        calc_index = self.all.createIndex(7, 0)
+
+        cols_data = self.all.mimeData([cols_index])
+        rows_data = self.all.mimeData([rows_index])
+        values_data = self.all.mimeData([values_index])
+        calc_data = self.all.mimeData([calc_index])
+
+        self.columns_model.dropMimeData(cols_data, None, 0, 0, QModelIndex())
+        self.rows_model.dropMimeData(rows_data, None, 0, 0, QModelIndex())
+        self.values_model.dropMimeData(calc_data, None, 0, 0, self.values_model.index(0))
+        self.values_model.dropMimeData(values_data, None, 0, 0, self.values_model.index(0))
+
+        @mock.patch("PyQt5.QtWidgets.QFileDialog.selectedFiles")
+        @mock.patch('PyQt5.QtWidgets.QMainWindow.statusBar')
+        @mock.patch("PyQt5.QtWidgets.QMessageBox.information")
+        @mock.patch("PyQt5.QtWidgets.QFileDialog.exec_")
+        @mock.patch("builtins.open")
+        def savefile(dlg, mock_open, mock_exec, mock_messagebox, mock_statusbar, mock_selectedfile):
+            mock_selectedfile.return_value = ['noname']
+            mock_exec.return_value = 1
+            getattr(self.gs.dlg, self.showScore)()
+            mock_file = mock.MagicMock(spec=TextIOBase)
+            mock_open.return_value = mock_file
+            getattr(dlg.ui, self.actionSaveCSV).trigger()
+            return mock_file
+
+        mock_file = savefile(self.gs.dlg)
+        #print(str(mock_file.mock_calls))
+
+        assert [call.write('cols;col1\r\n'),
+                 call.write('rows;\r\n'),
+                 call.write('row1;1.5\r\n'),
+                 call.write('row2;4.0\r\n'),
+                 call.close()] in mock_file.mock_calls
+
+    def test_variance(self):
+        _fields = [QgsField('id', QVariant.Int, QVariant.typeToName(QVariant.Int)),
+                   QgsField('rows', QVariant.String, QVariant.typeToName(QVariant.Int)),
+                   QgsField('cols', QVariant.String, QVariant.typeToName(QVariant.Int)),
+                   QgsField('values', QVariant.Double, QVariant.typeToName(QVariant.Int))]
+        data = [[1, 'row1', 'col1', 1.0], [2, 'row1', 'col1', 2.0], [3, 'row2', 'col1', 3.0], [4, 'row2', 'col1', 6.0]]
+        self.create_vectorlayer(_fields, data)
+        self.init_gs()
+
+        #for idx, value in enumerate(getattr(self.gs.dlg.tm1, self.data_var)):
+        #    print("{} {}".format(str(idx), str(value)))
+
+        cols_index = self.all.createIndex(0, 0)
+        rows_index = self.all.createIndex(2, 0)
+        values_index = self.all.createIndex(3, 0)
+        calc_index = self.all.createIndex(12, 0)
+
+        cols_data = self.all.mimeData([cols_index])
+        rows_data = self.all.mimeData([rows_index])
+        values_data = self.all.mimeData([values_index])
+        calc_data = self.all.mimeData([calc_index])
+
+        self.columns_model.dropMimeData(cols_data, None, 0, 0, QModelIndex())
+        self.rows_model.dropMimeData(rows_data, None, 0, 0, QModelIndex())
+        self.values_model.dropMimeData(calc_data, None, 0, 0, self.values_model.index(0))
+        self.values_model.dropMimeData(values_data, None, 0, 0, self.values_model.index(0))
+
+        @mock.patch("PyQt5.QtWidgets.QFileDialog.selectedFiles")
+        @mock.patch('PyQt5.QtWidgets.QMainWindow.statusBar')
+        @mock.patch("PyQt5.QtWidgets.QMessageBox.information")
+        @mock.patch("PyQt5.QtWidgets.QFileDialog.exec_")
+        @mock.patch("builtins.open")
+        def savefile(dlg, mock_open, mock_exec, mock_messagebox, mock_statusbar, mock_selectedfile):
+            mock_selectedfile.return_value = ['noname']
+            mock_exec.return_value = 1
+            getattr(self.gs.dlg, self.showScore)()
+            mock_file = mock.MagicMock(spec=TextIOBase)
+            mock_open.return_value = mock_file
+            getattr(dlg.ui, self.actionSaveCSV).trigger()
+            return mock_file
+
+        mock_file = savefile(self.gs.dlg)
+        #print(str(mock_file.mock_calls))
+
+        assert [call.write('cols;col1\r\n'),
+                 call.write('rows;\r\n'),
+                 call.write('row1;0.25\r\n'),
+                 call.write('row2;2.25\r\n'),
+                 call.close()] in mock_file.mock_calls
+
+    def test_stdev(self):
+        _fields = [QgsField('id', QVariant.Int, QVariant.typeToName(QVariant.Int)),
+                   QgsField('rows', QVariant.String, QVariant.typeToName(QVariant.Int)),
+                   QgsField('cols', QVariant.String, QVariant.typeToName(QVariant.Int)),
+                   QgsField('values', QVariant.Double, QVariant.typeToName(QVariant.Int))]
+        data = [[1, 'row1', 'col1', 1.0], [2, 'row1', 'col1', 2.0], [3, 'row2', 'col1', 3.0], [4, 'row2', 'col1', 6.0]]
+        self.create_vectorlayer(_fields, data)
+        self.init_gs()
+
+        #for idx, value in enumerate(getattr(self.gs.dlg.tm1, self.data_var)):
+        #    print("{} {}".format(str(idx), str(value)))
+
+        cols_index = self.all.createIndex(0, 0)
+        rows_index = self.all.createIndex(2, 0)
+        values_index = self.all.createIndex(3, 0)
+        calc_index = self.all.createIndex(9, 0)
+
+        cols_data = self.all.mimeData([cols_index])
+        rows_data = self.all.mimeData([rows_index])
+        values_data = self.all.mimeData([values_index])
+        calc_data = self.all.mimeData([calc_index])
+
+        self.columns_model.dropMimeData(cols_data, None, 0, 0, QModelIndex())
+        self.rows_model.dropMimeData(rows_data, None, 0, 0, QModelIndex())
+        self.values_model.dropMimeData(calc_data, None, 0, 0, self.values_model.index(0))
+        self.values_model.dropMimeData(values_data, None, 0, 0, self.values_model.index(0))
+
+        @mock.patch("PyQt5.QtWidgets.QFileDialog.selectedFiles")
+        @mock.patch('PyQt5.QtWidgets.QMainWindow.statusBar')
+        @mock.patch("PyQt5.QtWidgets.QMessageBox.information")
+        @mock.patch("PyQt5.QtWidgets.QFileDialog.exec_")
+        @mock.patch("builtins.open")
+        def savefile(dlg, mock_open, mock_exec, mock_messagebox, mock_statusbar, mock_selectedfile):
+            mock_selectedfile.return_value = ['noname']
+            mock_exec.return_value = 1
+            getattr(self.gs.dlg, self.showScore)()
+            mock_file = mock.MagicMock(spec=TextIOBase)
+            mock_open.return_value = mock_file
+            getattr(dlg.ui, self.actionSaveCSV).trigger()
+            return mock_file
+
+        mock_file = savefile(self.gs.dlg)
+        #print(str(mock_file.mock_calls))
+
+        assert [call.write('cols;col1\r\n'),
+                 call.write('rows;\r\n'),
+                 call.write('row1;0.5\r\n'),
+                 call.write('row2;1.5\r\n'),
+                 call.close()] in mock_file.mock_calls
+
+    def test_geom_polygon_area_sum(self):
+        _fields = [QgsField('id', QVariant.Int, QVariant.typeToName(QVariant.Int)),
+                   QgsField('rows', QVariant.String, QVariant.typeToName(QVariant.Int)),
+                   QgsField('cols', QVariant.String, QVariant.typeToName(QVariant.Int)),
+                   QgsField('values', QVariant.Double, QVariant.typeToName(QVariant.Int))]
+        data = [[1, 'row1', 'col1', 1.0], [2, 'row1', 'col1', 2.0], [3, 'row2', 'col1', 3.0], [4, 'row2', 'col1', 6.0]]
+        geometries = [QgsGeometry.fromWkt('POLYGON((1.0 1.0, 2.0 1.0, 2.0 0.0, 1.0 0.0, 1.0 1.0))'),
+                      QgsGeometry.fromWkt('POLYGON((1.0 1.0, 3.0 1.0, 3.0 0.0, 1.0 0.0, 1.0 1.0))'),
+                      QgsGeometry.fromWkt('POLYGON((1.0 1.0, 4.0 1.0, 4.0 0.0, 1.0 0.0, 1.0 1.0))'),
+                      QgsGeometry.fromWkt('POLYGON((1.0 1.0, 6.0 1.0, 6.0 0.0, 1.0 0.0, 1.0 1.0))')]
+        self.create_vectorlayer(_fields, data, geometries, 'Polygon')
+        self.init_gs()
+
+        #for idx, value in enumerate(getattr(self.gs.dlg.tm1, self.data_var)):
+        #    print("{} {}".format(str(idx), str(value)))
+
+        cols_index = self.all.createIndex(0, 0)
+        rows_index = self.all.createIndex(2, 0)
+        values_index = self.all.createIndex(4, 0)
+        calc_index = self.all.createIndex(12, 0)
+
+        cols_data = self.all.mimeData([cols_index])
+        rows_data = self.all.mimeData([rows_index])
+        values_data = self.all.mimeData([values_index])
+        calc_data = self.all.mimeData([calc_index])
+
+        self.columns_model.dropMimeData(cols_data, None, 0, 0, QModelIndex())
+        self.rows_model.dropMimeData(rows_data, None, 0, 0, QModelIndex())
+        self.values_model.dropMimeData(calc_data, None, 0, 0, self.values_model.index(0))
+        self.values_model.dropMimeData(values_data, None, 0, 0, self.values_model.index(0))
+
+        @mock.patch("PyQt5.QtWidgets.QFileDialog.selectedFiles")
+        @mock.patch('PyQt5.QtWidgets.QMainWindow.statusBar')
+        @mock.patch("PyQt5.QtWidgets.QMessageBox.information")
+        @mock.patch("PyQt5.QtWidgets.QFileDialog.exec_")
+        @mock.patch("builtins.open")
+        def savefile(dlg, mock_open, mock_exec, mock_messagebox, mock_statusbar, mock_selectedfile):
+            mock_selectedfile.return_value = ['noname']
+            mock_exec.return_value = 1
+            getattr(self.gs.dlg, self.showScore)()
+            mock_file = mock.MagicMock(spec=TextIOBase)
+            mock_open.return_value = mock_file
+            getattr(dlg.ui, self.actionSaveCSV).trigger()
+            return mock_file
+
+        mock_file = savefile(self.gs.dlg)
+        #print(str(mock_file.mock_calls))
+
+        assert [call.write('cols;col1\r\n'),
+                 call.write('rows;\r\n'),
+                 call.write('row1;3.0\r\n'),
+                 call.write('row2;8.0\r\n'),
+                 call.close()] in mock_file.mock_calls
+
+    def test_geom_perimeter_sum(self):
+        _fields = [QgsField('id', QVariant.Int, QVariant.typeToName(QVariant.Int)),
+                   QgsField('rows', QVariant.String, QVariant.typeToName(QVariant.Int)),
+                   QgsField('cols', QVariant.String, QVariant.typeToName(QVariant.Int)),
+                   QgsField('values', QVariant.Double, QVariant.typeToName(QVariant.Int))]
+        data = [[1, 'row1', 'col1', 1.0], [2, 'row1', 'col1', 2.0], [3, 'row2', 'col1', 3.0], [4, 'row2', 'col1', 6.0]]
+        geometries = [QgsGeometry.fromWkt('POLYGON((1.0 1.0, 2.0 1.0, 2.0 0.0, 1.0 0.0, 1.0 1.0))'),
+                      QgsGeometry.fromWkt('POLYGON((1.0 1.0, 3.0 1.0, 3.0 0.0, 1.0 0.0, 1.0 1.0))'),
+                      QgsGeometry.fromWkt('POLYGON((1.0 1.0, 4.0 1.0, 4.0 0.0, 1.0 0.0, 1.0 1.0))'),
+                      QgsGeometry.fromWkt('POLYGON((1.0 1.0, 6.0 1.0, 6.0 0.0, 1.0 0.0, 1.0 1.0))')]
+        self.create_vectorlayer(_fields, data, geometries, 'Polygon')
+        self.init_gs()
+
+        #for idx, value in enumerate(getattr(self.gs.dlg.tm1, self.data_var)):
+        #    print("{} {}".format(str(idx), str(value)))
+
+        cols_index = self.all.createIndex(0, 0)
+        rows_index = self.all.createIndex(2, 0)
+        values_index = self.all.createIndex(5, 0)
+        calc_index = self.all.createIndex(12, 0)
+
+        cols_data = self.all.mimeData([cols_index])
+        rows_data = self.all.mimeData([rows_index])
+        values_data = self.all.mimeData([values_index])
+        calc_data = self.all.mimeData([calc_index])
+
+        self.columns_model.dropMimeData(cols_data, None, 0, 0, QModelIndex())
+        self.rows_model.dropMimeData(rows_data, None, 0, 0, QModelIndex())
+        self.values_model.dropMimeData(calc_data, None, 0, 0, self.values_model.index(0))
+        self.values_model.dropMimeData(values_data, None, 0, 0, self.values_model.index(0))
+
+        @mock.patch("PyQt5.QtWidgets.QFileDialog.selectedFiles")
+        @mock.patch('PyQt5.QtWidgets.QMainWindow.statusBar')
+        @mock.patch("PyQt5.QtWidgets.QMessageBox.information")
+        @mock.patch("PyQt5.QtWidgets.QFileDialog.exec_")
+        @mock.patch("builtins.open")
+        def savefile(dlg, mock_open, mock_exec, mock_messagebox, mock_statusbar, mock_selectedfile):
+            mock_selectedfile.return_value = ['noname']
+            mock_exec.return_value = 1
+            getattr(self.gs.dlg, self.showScore)()
+            mock_file = mock.MagicMock(spec=TextIOBase)
+            mock_open.return_value = mock_file
+            getattr(dlg.ui, self.actionSaveCSV).trigger()
+            return mock_file
+
+        mock_file = savefile(self.gs.dlg)
+        #print(str(mock_file.mock_calls))
+
+        assert [call.write('cols;col1\r\n'),
+                 call.write('rows;\r\n'),
+                 call.write('row1;10.0\r\n'),
+                 call.write('row2;20.0\r\n'),
+                 call.close()] in mock_file.mock_calls
+
+    def test_geom_linestring_length_sum(self):
+        _fields = [QgsField('id', QVariant.Int, QVariant.typeToName(QVariant.Int)),
+                   QgsField('rows', QVariant.String, QVariant.typeToName(QVariant.Int)),
+                   QgsField('cols', QVariant.String, QVariant.typeToName(QVariant.Int)),
+                   QgsField('values', QVariant.Double, QVariant.typeToName(QVariant.Int))]
+        data = [[1, 'row1', 'col1', 1.0], [2, 'row1', 'col1', 2.0], [3, 'row2', 'col1', 3.0], [4, 'row2', 'col1', 6.0]]
+        geometries = [QgsGeometry.fromWkt('LINESTRING(1.0 1.0, 2.0 1.0)'),
+                      QgsGeometry.fromWkt('LINESTRING(1.0 1.0, 3.0 1.0)'),
+                      QgsGeometry.fromWkt('LINESTRING(1.0 1.0, 4.0 1.0)'),
+                      QgsGeometry.fromWkt('LINESTRING(1.0 1.0, 6.0 1.0)')]
+        self.create_vectorlayer(_fields, data, geometries, 'Linestring')
+        self.init_gs()
+
+        #for idx, value in enumerate(getattr(self.gs.dlg.tm1, self.data_var)):
+        #    print("{} {}".format(str(idx), str(value)))
+
+        cols_index = self.all.createIndex(0, 0)
+        rows_index = self.all.createIndex(2, 0)
+        values_index = self.all.createIndex(4, 0)
+        calc_index = self.all.createIndex(11, 0)
+
+        cols_data = self.all.mimeData([cols_index])
+        rows_data = self.all.mimeData([rows_index])
+        values_data = self.all.mimeData([values_index])
+        calc_data = self.all.mimeData([calc_index])
+
+        self.columns_model.dropMimeData(cols_data, None, 0, 0, QModelIndex())
+        self.rows_model.dropMimeData(rows_data, None, 0, 0, QModelIndex())
+        self.values_model.dropMimeData(calc_data, None, 0, 0, self.values_model.index(0))
+        self.values_model.dropMimeData(values_data, None, 0, 0, self.values_model.index(0))
+
+        @mock.patch("PyQt5.QtWidgets.QFileDialog.selectedFiles")
+        @mock.patch('PyQt5.QtWidgets.QMainWindow.statusBar')
+        @mock.patch("PyQt5.QtWidgets.QMessageBox.information")
+        @mock.patch("PyQt5.QtWidgets.QFileDialog.exec_")
+        @mock.patch("builtins.open")
+        def savefile(dlg, mock_open, mock_exec, mock_messagebox, mock_statusbar, mock_selectedfile):
+            mock_selectedfile.return_value = ['noname']
+            mock_exec.return_value = 1
+            getattr(self.gs.dlg, self.showScore)()
+            mock_file = mock.MagicMock(spec=TextIOBase)
+            mock_open.return_value = mock_file
+            getattr(dlg.ui, self.actionSaveCSV).trigger()
+            return mock_file
+
+        mock_file = savefile(self.gs.dlg)
+        #print(str(mock_file.mock_calls))
+
+        assert [call.write('cols;col1\r\n'),
+                 call.write('rows;\r\n'),
+                 call.write('row1;3.0\r\n'),
+                 call.write('row2;8.0\r\n'),
+                 call.close()] in mock_file.mock_calls
+
     def tearDown(self):
         QgsProject.instance().clear()
+        self.gs.dlg.close()
+        self.gs = None
