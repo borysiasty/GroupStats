@@ -115,9 +115,9 @@ class GroupStatsDialog(QMainWindow):
             elif value[2]==2:
                 valueFunction = lambda _object: _object.geometry().area()                    # area
         elif value[0]=='attributeTxt':
-            valueFunction = lambda _object: None if _object.attribute(value[1])==None else _object.attribute(value[1])#.toString()    # amodeut tekstowy
+            valueFunction = lambda _object: None if _object.attribute(value[1]) is None else _object.attribute(value[1])#.toString()    # text attribute
         elif value[0]=='countAttributes':
-            valueFunction = lambda _object: None if _object.attribute(value[1])==None else float(_object.attribute(value[1]))         #.toReal()[0]   # amodeut liczbowy (toReal daje wynik (real, True/False))
+            valueFunction = lambda _object: None if _object.attribute(value[1]) is None else float(_object.attribute(value[1]))         #.toReal()[0]   # numeric attribute (toReal gives the result (real, True / False))
 
         index = self.ui.layer.currentIndex()                                             # Download chosen layer
         layerId = self.ui.layer.itemData(index)
@@ -258,7 +258,7 @@ class GroupStatsDialog(QMainWindow):
                 colNames.append(x[1])
             elif x[0]!='calculations':
                 colNames.append(atr[x[2]].name())
-        nameColumnsCalculations=()                                                              # Insert row and column names with calculations
+        nameColumnsCalculations=()                                                            # Insert row and column names with calculations
         nameRowsCalculation=()
         if len(calculations[1])>0:
             obl = [self.calculations.list[x][0] for x in calculations[1]]
@@ -278,7 +278,6 @@ class GroupStatsDialog(QMainWindow):
             rows1.insert(0,tuple(rowNames)+nameRowsCalculation)
         if len(columns1)>0 and len(columns1[0])>0:
             columns1.insert(0,tuple(colNames)+nameColumnsCalculations)
-
 
         if len(rows1)>0 and len(columns1)>0:
             self.ui.result.setUpdatesEnabled(False)
@@ -958,7 +957,11 @@ class ResultModel(QAbstractTableModel):     # finished
             for n, d in enumerate(self._data[row - self.offsetY]):              # n-column number before storting, d-data in the column
                 tmp.append((n,d[0]))
         else:                                                                   # or column names
+            print("self.columns[1:]" + str(self.columns[1:]))
+            # TODO: There MUST be a bug here. Why should we iterate self.columns to check. d[1] contains nameColumnCalculation when the calculation is done at columns.
+            # TODO: We should probably iterate through all values in the chosen column instead and check that all can be converted to float.
             for n, d in enumerate(self.columns[1:]):                            # n-column number before storting, d-column description
+                print("n {} d {} row {}".format(str(n), str(d), str(row)))
                 if str(type(d[row])) != "<type 'float'>":                    # Replace text with numbers if it is a number (to correctly sort numbers)
                     try:
                         number = float(d[row])
