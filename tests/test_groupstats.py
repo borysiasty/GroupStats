@@ -729,7 +729,7 @@ class TestGroupStats(object):
             mock_selectedfile.return_value = ['noname']
             mock_exec.return_value = 1
             getattr(self.gs.dlg, self.showScore)()
-            self.result_table.selectRow(2)
+            self.result_table.selectRow(3)
             #self.result_table.selectRow(1)
             #self.result_table.selectRow(2)
 
@@ -739,11 +739,11 @@ class TestGroupStats(object):
             return mock_file
 
         mock_file = savefile(self.gs.dlg)
-        print(str(mock_file.mock_calls))
+        #print(str(mock_file.mock_calls))
 
         assert [call.write('cols;col1\r\n'),
                  call.write('rows;\r\n'),
-                 call.write('row1;1.0\r\n'),
+                 call.write('row2;2.0\r\n'),
                  call.close()] in mock_file.mock_calls
 
     def tearDown(self):
