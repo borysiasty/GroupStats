@@ -908,7 +908,7 @@ class ResultModel(QAbstractTableModel):     # finished
         if column >= self.offsetX:                                             # Selecting data to sort
             # n-line number before storting, d-data in line
             try:
-                tmp.extend([(n, float(d[column - self.offsetX][0]) )for n, d in enumerate(self._data)])
+                tmp.extend([(n, float(d[column - self.offsetX][0])) for n, d in enumerate(self._data)])
             except (ValueError, TypeError):
                 tmp.extend([(n, str(d[column - self.offsetX][0])) for n, d in enumerate(self._data)])
         else:                                                                   # or line names
