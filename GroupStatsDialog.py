@@ -117,7 +117,10 @@ class GroupStatsDialog(QMainWindow):
         elif value[0]=='attributeTxt':
             valueFunction = lambda _object: None if _object.attribute(value[1]) is None else _object.attribute(value[1])#.toString()    # text attribute
         elif value[0]=='countAttributes':
-            valueFunction = lambda _object: None if _object.attribute(value[1]) is None else float(_object.attribute(value[1]))         #.toReal()[0]   # numeric attribute (toReal gives the result (real, True / False))
+            valueFunction = lambda _object: None if _object.attribute(value[1]) is None or (
+                    isinstance(_object.attribute(value[1]), QVariant) and
+                    _object.attribute(value[1]).isNull()) else (float(_object.attribute(value[1]).value())
+                    if isinstance(_object.attribute(value[1]), QVariant) else float(_object.attribute(value[1])))
 
         index = self.ui.layer.currentIndex()                                             # Download chosen layer
         layerId = self.ui.layer.itemData(index)
@@ -180,7 +183,12 @@ class GroupStatsDialog(QMainWindow):
                         key_row.append(newRowKey)
 
                 key = ( tuple(key_row) , tuple(key_column) )                                 # key to identify object groups
-                valueToCalculate = valueFunction(f)
+                try:
+                    valueToCalculate = valueFunction(f)
+                except:
+                    print("f failed: " + str(f))
+                    print("f: " + str(f.attributes()))
+                    raise
                 if valueToCalculate!=None or self.ui.useNULL.isChecked():
                     if valueToCalculate==None:
                         NULLcounter += 1
@@ -969,8 +977,21 @@ class ResultModel(QAbstractTableModel):     # finished
                     tmp.append((n,number))
                 else:
                     tmp.append((n,d[row]))
-
-        tmp.sort(key=lambda x: x[1])                                    # ascending sorting
+        # Bug here.
+        """
+        TypeError: ' 
+        Traceback (most recent call last):
+          File "/home/henrik/.local/share/QGIS/QGIS3/profiles/default/python/plugins/GroupStats/GroupStatsDialog.py", line 87, in sortRows
+            self.ui.result.model().sortRows(row, mode)
+          File "/home/henrik/.local/share/QGIS/QGIS3/profiles/default/python/plugins/GroupStats/GroupStatsDialog.py", line 973, in sortRows
+            tmp.sort(key=lambda x: x[1])                                    # ascending sorting
+        TypeError: '
+        """
+        try:
+            tmp.sort(key=lambda x: x[1])                                    # ascending sorting
+        except:
+            print(tmp)
+            raise
         if mode==1:                                                             # descending sorting
             tmp.reverse()
 
