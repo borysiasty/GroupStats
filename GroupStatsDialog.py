@@ -947,21 +947,14 @@ class ResultModel(QAbstractTableModel):     # finished
         rows - rows number
         mode - 1-descending, other-ascending
         """
-
-        if len(self.columns) == 1:                                              # If there is only one column, there is nothing to sort
+        if len(self.columns) - self.offsetX == 1:                                              # If there is only one column, there is nothing to sort
             return                                                              # (self.columns are then the following list [(),])
-
         tmp = []                                                                # A temporary list for a sorted row
-
         if row >= self.offsetY:                                              # Selecting data to sort
             for n, d in enumerate(self._data[row - self.offsetY]):              # n-column number before storting, d-data in the column
                 tmp.append((n,d[0]))
         else:                                                                   # or column names
-            print("self.columns[1:]" + str(self.columns[1:]))
-            # TODO: There MUST be a bug here. Why should we iterate self.columns to check. d[1] contains nameColumnCalculation when the calculation is done at columns.
-            # TODO: We should probably iterate through all values in the chosen column instead and check that all can be converted to float.
             for n, d in enumerate(self.columns[1:]):                            # n-column number before storting, d-column description
-                print("n {} d {} row {}".format(str(n), str(d), str(row)))
                 if str(type(d[row])) != "<type 'float'>":                    # Replace text with numbers if it is a number (to correctly sort numbers)
                     try:
                         number = float(d[row])
@@ -986,7 +979,6 @@ class ResultModel(QAbstractTableModel):     # finished
         columns2=tuple(self.columns)                                            # A temporary tuple with column descriptions
         self.columns=[]
         self.columns.append(columns2[0])                                        # Adding column names (only names, no column descriptions)
-
         for j in data2:                                                         # Arranging all data according to a temporary sort list
             row = []
             for i in tmp:
