@@ -944,7 +944,7 @@ class ResultModel(QAbstractTableModel):     # finished
         rows - rows number
         mode - 1-descending, other-ascending
         """
-        if len(self.columns) - self.offsetX == 1:                                              # If there is only one column, there is nothing to sort
+        if len(self.columns) - self.offsetX <=1:                                              # If there is only one column, there is nothing to sort
             return                                                              # (self.columns are then the following list [(),])
         tmp = []                                                                # A temporary list for a sorted row
 
