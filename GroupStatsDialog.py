@@ -183,12 +183,7 @@ class GroupStatsDialog(QMainWindow):
                         key_row.append(newRowKey)
 
                 key = ( tuple(key_row) , tuple(key_column) )                                 # key to identify object groups
-                try:
-                    valueToCalculate = valueFunction(f)
-                except:
-                    print("f failed: " + str(f))
-                    print("f: " + str(f.attributes()))
-                    raise
+                valueToCalculate = valueFunction(f)
                 if valueToCalculate!=None or self.ui.useNULL.isChecked():
                     if valueToCalculate==None:
                         NULLcounter += 1
@@ -898,7 +893,7 @@ class ResultModel(QAbstractTableModel):     # finished
 
         return None#QVariant()
 
-    def sort(self, columns, mode):
+    def sort(self, column, mode):
         """
         Sorts the results table by the selected column
         column - column number
@@ -910,25 +905,19 @@ class ResultModel(QAbstractTableModel):     # finished
 
         tmp = []                                                                # A temporary list for a sorted column
 
-        if columns >= self.offsetX:                                             # Selecting data to sort
-            for n, d in enumerate(self._data):                                   # n-line number before storting, d-data in line
-                tmp.append((n,d[columns - self.offsetX][0]))
+        if column >= self.offsetX:                                             # Selecting data to sort
+            # n-line number before storting, d-data in line
+            try:
+                tmp.extend([(n, float(d[column - self.offsetX][0]) )for n, d in enumerate(self._data)])
+            except (ValueError, TypeError):
+                tmp.extend([(n, str(d[column - self.offsetX][0])) for n, d in enumerate(self._data)])
         else:                                                                   # or line names
-            for n, d in enumerate(self.rows[1:]):                            # n-row number before storting, d-row description
-                if str(type(d[columns])) != "<type 'float'>":                   # Replace text with numbers if it is a number (to correctly sort numbers)
-                    try:
-                        number = float(d[columns])
-                    except:
-                        test = False
-                    else:
-                        test = True
-                else:
-                    test = False
-
-                if test:
-                    tmp.append((n,number))
-                else:
-                    tmp.append((n,d[columns]))
+            # Either convert all values or none to float for sorting
+            # n-row number before storting, d-row description
+            try:
+                tmp.extend([(n, float(d[column])) for n, d in enumerate(self.rows[1:])])
+            except (ValueError, TypeError):
+                tmp.extend([(n, d[column]) for n, d in enumerate(self.rows[1:])])
 
         tmp.sort(key=lambda x: x[1])                                            # ascending sorting
         if mode==1:                                                             # descending sorting
@@ -958,40 +947,22 @@ class ResultModel(QAbstractTableModel):     # finished
         if len(self.columns) - self.offsetX == 1:                                              # If there is only one column, there is nothing to sort
             return                                                              # (self.columns are then the following list [(),])
         tmp = []                                                                # A temporary list for a sorted row
-        if row >= self.offsetY:                                              # Selecting data to sort
-            for n, d in enumerate(self._data[row - self.offsetY]):              # n-column number before storting, d-data in the column
-                tmp.append((n,d[0]))
-        else:                                                                   # or column names
-            for n, d in enumerate(self.columns[1:]):                            # n-column number before storting, d-column description
-                if str(type(d[row])) != "<type 'float'>":                    # Replace text with numbers if it is a number (to correctly sort numbers)
-                    try:
-                        number = float(d[row])
-                    except:
-                        test = False
-                    else:
-                        test = True
-                else:
-                    test = False
 
-                if test:
-                    tmp.append((n,number))
-                else:
-                    tmp.append((n,d[row]))
-        # Bug here.
-        """
-        TypeError: ' 
-        Traceback (most recent call last):
-          File "/home/henrik/.local/share/QGIS/QGIS3/profiles/default/python/plugins/GroupStats/GroupStatsDialog.py", line 87, in sortRows
-            self.ui.result.model().sortRows(row, mode)
-          File "/home/henrik/.local/share/QGIS/QGIS3/profiles/default/python/plugins/GroupStats/GroupStatsDialog.py", line 973, in sortRows
-            tmp.sort(key=lambda x: x[1])                                    # ascending sorting
-        TypeError: '
-        """
-        try:
-            tmp.sort(key=lambda x: x[1])                                    # ascending sorting
-        except:
-            print(tmp)
-            raise
+        if row >= self.offsetY:                                              # Selecting data to sort
+            # Either convert all values or none to float for sorting
+            try:
+                tmp.extend([(n, float(d[0])) for n, d in enumerate(self._data[row - self.offsetY])])
+            except (ValueError, TypeError):
+                tmp.extend([(n, str(d[0])) for n, d in enumerate(self._data[row - self.offsetY])])    # n-column number before storting, d-data in the column
+        else:                                                                   # or column names
+            # Either convert all values or none to float for sorting
+            try:
+                tmp.extend([(n, float(d[row])) for n, d in enumerate(self.columns[1:])])
+            except (ValueError, TypeError):
+                tmp.extend([(n, str(d[row])) for n, d in enumerate(self.columns[1:])])
+
+        tmp.sort(key=lambda x: x[1])                                    # ascending sorting
+
         if mode==1:                                                             # descending sorting
             tmp.reverse()
 
