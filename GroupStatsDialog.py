@@ -1045,7 +1045,7 @@ class Calculations(QObject):                   # finished
                      7:(QCoreApplication.translate('Calculations','max'), self.maximum),
                      8:(QCoreApplication.translate('Calculations','unique'), self.unique)}
 
-        self.textList = (0, 8)                                                                        # Calculations also working on text
+        self.textList = (0, 6, 7, 8)                                                                        # Calculations also working on text
 
         self.textNames = ''
         for i in self.textList:
