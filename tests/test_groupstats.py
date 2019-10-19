@@ -1,5 +1,6 @@
 from qgis.core import QgsProject, QgsVectorLayer, QgsField, QgsFeature, QgsFields, QgsGeometry
 from PyQt5.QtCore import QVariant, QModelIndex
+from PyQt5.QtWidgets import QApplication
 import mock
 from mock import call
 from io import TextIOBase
@@ -1065,6 +1066,89 @@ class TestGroupStats(object):
         assert [call.write('cols;col1\r\n'),
                  call.write('None;3.0\r\n'),
                  call.close()] in mock_file.mock_calls
+
+    def test_show_panel(self):
+        """
+        Test that show panel runs without exception
+        :return:
+        """
+        _fields = [QgsField('id', QVariant.Int, QVariant.typeToName(QVariant.Int)),
+                   QgsField('rows', QVariant.String, QVariant.typeToName(QVariant.String)),
+                   QgsField('cols', QVariant.String, QVariant.typeToName(QVariant.String)),
+                   QgsField('values', QVariant.Double, QVariant.typeToName(QVariant.Double))]
+        data = [[1, 'row1', 'col1', 1.0], [2, 'row1', 'col1', 2.0], [3, 'row2', 'col1', 3.0], [4, 'row2', 'col1', 4.0]]
+        self.create_vectorlayer(_fields, data)
+        self.init_gs()
+        self.gs.dlg.ui.actionShowPanel.trigger()
+
+    def test_duplicate_no_data(self):
+        """
+        Test that show panel runs without exception
+        :return:
+        """
+        _fields = [QgsField('id', QVariant.Int, QVariant.typeToName(QVariant.Int)),
+                   QgsField('rows', QVariant.String, QVariant.typeToName(QVariant.String)),
+                   QgsField('cols', QVariant.String, QVariant.typeToName(QVariant.String)),
+                   QgsField('values', QVariant.Double, QVariant.typeToName(QVariant.Double))]
+        data = [[1, 'row1', 'col1', 1.0], [2, 'row1', 'col1', 2.0], [3, 'row2', 'col1', 3.0], [4, 'row2', 'col1', 4.0]]
+        self.create_vectorlayer(_fields, data)
+        self.init_gs()
+
+
+        @mock.patch('PyQt5.QtWidgets.QMessageBox.information')
+        def __test(self, mock_messagebox):
+            self.gs.dlg.ui.actionCopy.trigger()
+            return mock_messagebox
+
+        mock_messagebox = __test(self)
+
+        assert call(None, 'Information', 'No data to save/copy') in mock_messagebox.mock_calls
+
+    def test_duplicate(self):
+        """
+        Test that show panel runs without exception
+        :return:
+        """
+        _fields = [QgsField('id', QVariant.Int, QVariant.typeToName(QVariant.Int)),
+                   QgsField('rows', QVariant.String, QVariant.typeToName(QVariant.String)),
+                   QgsField('cols', QVariant.String, QVariant.typeToName(QVariant.String)),
+                   QgsField('values', QVariant.Double, QVariant.typeToName(QVariant.Double))]
+        data = [[1, 'row1', 'col1', 1.0], [2, 'row1', 'col1', 2.0], [3, 'row2', 'col1', 3.0], [4, 'row2', 'col1', 4.0]]
+        self.create_vectorlayer(_fields, data)
+        self.init_gs()
+
+        cols_index = self.all.createIndex(0, 0)
+        rows_index = self.all.createIndex(2, 0)
+        values_index = self.all.createIndex(3, 0)
+        calc_index = self.all.createIndex(10, 0)
+
+        cols_data = self.all.mimeData([cols_index])
+        rows_data = self.all.mimeData([rows_index])
+        values_data = self.all.mimeData([values_index])
+        calc_data = self.all.mimeData([calc_index])
+
+        self.columns_model.dropMimeData(cols_data, None, 0, 0, QModelIndex())
+        self.rows_model.dropMimeData(rows_data, None, 0, 0, QModelIndex())
+        self.values_model.dropMimeData(calc_data, None, 0, 0, self.values_model.index(0))
+        self.values_model.dropMimeData(values_data, None, 0, 0, self.values_model.index(0))
+
+        @mock.patch('PyQt5.QtWidgets.QMessageBox.information')
+        def __test(self, mock_messagebox):
+            getattr(self.gs.dlg, self.showScore)()
+            self.gs.dlg.ui.actionCopy.trigger()
+            return mock_messagebox
+
+        mock_messagebox = __test(self)
+
+        assert not mock_messagebox.mock_calls
+
+        test = QApplication.clipboard().text()
+
+        #a = ''.join([str(a.encode()) for a in test])
+        #print(str(a))
+        assert test == '''cols\tcol1\rrows\t\rrow1\t3.0\rrow2\t7.0'''
+
+
 
     def __test_sortrow_one_row(self):
         _fields = [QgsField('id', QVariant.Int, QVariant.typeToName(QVariant.Int)),

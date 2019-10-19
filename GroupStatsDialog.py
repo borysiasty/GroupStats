@@ -436,18 +436,18 @@ class GroupStatsDialog(QMainWindow):
     # ------------------------ COPYING DATA TO THE CLIPBOARD AND CSV SAVE ----------------------------START
 
     def duplication (self):
-        "Kopiowanie wszystkich danych do schowka"
+        "Copy all data to the clipboard"
         text, test = self.downloadDataFromTheTable(True, True)
         if test==True:
-            schowek = QApplication.clipboard()
-            schowek.setText(text)
+            clipboard = QApplication.clipboard()
+            clipboard.setText(text)
 
     def copyMarked (self):
-        "Kopiowanie zaznaczonych danych do schowka"
+        "Copy selected data to the clipboard"
         text, test = self.downloadDataFromTheTable(False, True)
         if test==True:
-            schowek = QApplication.clipboard()
-            schowek.setText(text)
+            clipboard = QApplication.clipboard()
+            clipboard.setText(text)
 
     def exportToCSV (self):
         "Saves all data to CSV file"
