@@ -21,7 +21,7 @@ repository=https://github.com/borysiasty/GroupStats
 
 icon=icon.png
 
-experimental=False
+experimental=True
 deprecated=False
 
 # Author contact information
