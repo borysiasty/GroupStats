@@ -1,9 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS><TS version="2.0" language="fr_FR" sourcelanguage="en_US">
 <context>
+    <name>Calculations</name>
+    <message>
+        <location filename="../GroupStatsDialog.py" line="1048"/>
+        <source>count</source>
+        <translation>compter</translation>
+    </message>
+    <message>
+        <location filename="../GroupStatsDialog.py" line="1049"/>
+        <source>sum</source>
+        <translation>somme</translation>
+    </message>
+    <message>
+        <location filename="../GroupStatsDialog.py" line="1050"/>
+        <source>average</source>
+        <translation>moyenne</translation>
+    </message>
+    <message>
+        <location filename="../GroupStatsDialog.py" line="1051"/>
+        <source>variance</source>
+        <translation>variance</translation>
+    </message>
+    <message>
+        <location filename="../GroupStatsDialog.py" line="1052"/>
+        <source>stand.dev.</source>
+        <translation>dev. stand.</translation>
+    </message>
+    <message>
+        <location filename="../GroupStatsDialog.py" line="1053"/>
+        <source>median</source>
+        <translation>médiane</translation>
+    </message>
+    <message>
+        <location filename="../GroupStatsDialog.py" line="1054"/>
+        <source>min</source>
+        <translation>minimum</translation>
+    </message>
+    <message>
+        <location filename="../GroupStatsDialog.py" line="1055"/>
+        <source>max</source>
+        <translation>maximum</translation>
+    </message>
+    <message>
+        <location filename="../GroupStatsDialog.py" line="1056"/>
+        <source>unique</source>
+        <translation>valeur unique</translation>
+    </message>
+</context>
+<context>
     <name>GroupStats</name>
     <message>
-        <location filename="../GroupStatsDialog.py" line="506"/>
+        <location filename="../GroupStatsDialog.py" line="501"/>
         <source>Information</source>
         <translation>Information</translation>
     </message>
@@ -13,67 +61,67 @@
         <translation>Aucun vecteur trouve</translation>
     </message>
     <message>
-        <location filename="../GroupStatsDialog.py" line="210"/>
+        <location filename="../GroupStatsDialog.py" line="205"/>
         <source>Calculate... </source>
         <translation>Calcul... </translation>
     </message>
     <message>
-        <location filename="../GroupStatsDialog.py" line="212"/>
+        <location filename="../GroupStatsDialog.py" line="207"/>
         <source>generate view...</source>
         <translation>generer une vue...</translation>
     </message>
     <message>
-        <location filename="../GroupStatsDialog.py" line="284"/>
+        <location filename="../GroupStatsDialog.py" line="277"/>
         <source>Function</source>
         <translation>Fonction</translation>
     </message>
     <message>
-        <location filename="../GroupStatsDialog.py" line="325"/>
+        <location filename="../GroupStatsDialog.py" line="318"/>
         <source>done.</source>
         <translation>fini.</translation>
     </message>
     <message>
-        <location filename="../GroupStatsDialog.py" line="333"/>
+        <location filename="../GroupStatsDialog.py" line="327"/>
         <source>No data found.</source>
         <translation>Aucune donnée trouvée.</translation>
     </message>
     <message>
-        <location filename="../GroupStatsDialog.py" line="372"/>
+        <location filename="../GroupStatsDialog.py" line="366"/>
         <source>Length</source>
         <translation>Longueur</translation>
     </message>
     <message>
-        <location filename="../GroupStatsDialog.py" line="374"/>
+        <location filename="../GroupStatsDialog.py" line="368"/>
         <source>Perimeter</source>
         <translation>Périmètre</translation>
     </message>
     <message>
-        <location filename="../GroupStatsDialog.py" line="374"/>
+        <location filename="../GroupStatsDialog.py" line="368"/>
         <source>Area</source>
         <translation>Surface</translation>
     </message>
     <message>
-        <location filename="../GroupStatsDialog.py" line="491"/>
+        <location filename="../GroupStatsDialog.py" line="486"/>
         <source>No data to save/copy</source>
         <translation>Aucune donnée à sauvegarder/copier</translation>
     </message>
     <message>
-        <location filename="../GroupStatsDialog.py" line="775"/>
+        <location filename="../GroupStatsDialog.py" line="765"/>
         <source>Function can be droped in only one area</source>
         <translation>Une fonction peut être inséré dans une seule zone</translation>
     </message>
     <message>
-        <location filename="../GroupStatsDialog.py" line="716"/>
+        <location filename="../GroupStatsDialog.py" line="709"/>
         <source>This field has already been droped</source>
         <translation>Ce champ a déjà été utilisé</translation>
     </message>
     <message>
-        <location filename="../GroupStatsDialog.py" line="772"/>
+        <location filename="../GroupStatsDialog.py" line="762"/>
         <source>Area &apos;Value&apos; may contain a maximum of two entries</source>
         <translation>L&apos;espace &apos;Valeur&apos; ne peut contenir plus de deux éléments</translation>
     </message>
     <message>
-        <location filename="../GroupStatsDialog.py" line="778"/>
+        <location filename="../GroupStatsDialog.py" line="768"/>
         <source>In the area &apos;Value&apos; one of the items must be a function</source>
         <translation>Dans l&apos;espace &apos;Valeur&apos; l&apos;un des éléments doit être une fonction</translation>
     </message>
@@ -81,7 +129,7 @@
 <context>
     <name>GroupStatsD</name>
     <message>
-        <location filename="../GroupStatsDialog.py" line="506"/>
+        <location filename="../GroupStatsDialog.py" line="501"/>
         <source>No data selected</source>
         <translation>Aucune donnée sélectionnée</translation>
     </message>
@@ -276,54 +324,6 @@ p, li { white-space: pre-wrap; }
         <location filename="../ui_groupstats.ui" line="478"/>
         <source>&amp;Join selected features</source>
         <translation>&amp;Unir les géométries sélectionnées</translation>
-    </message>
-</context>
-<context>
-    <name>Obliczenia</name>
-    <message>
-        <location filename="../GroupStatsDialog.py" line="1074"/>
-        <source>count</source>
-        <translation>compter</translation>
-    </message>
-    <message>
-        <location filename="../GroupStatsDialog.py" line="1075"/>
-        <source>sum</source>
-        <translation>somme</translation>
-    </message>
-    <message>
-        <location filename="../GroupStatsDialog.py" line="1076"/>
-        <source>average</source>
-        <translation>moyenne</translation>
-    </message>
-    <message>
-        <location filename="../GroupStatsDialog.py" line="1077"/>
-        <source>variance</source>
-        <translation>variance</translation>
-    </message>
-    <message>
-        <location filename="../GroupStatsDialog.py" line="1078"/>
-        <source>stand.dev.</source>
-        <translation>dev. stand.</translation>
-    </message>
-    <message>
-        <location filename="../GroupStatsDialog.py" line="1079"/>
-        <source>median</source>
-        <translation>médiane</translation>
-    </message>
-    <message>
-        <location filename="../GroupStatsDialog.py" line="1080"/>
-        <source>min</source>
-        <translation>minimum</translation>
-    </message>
-    <message>
-        <location filename="../GroupStatsDialog.py" line="1081"/>
-        <source>max</source>
-        <translation>maximum</translation>
-    </message>
-    <message>
-        <location filename="../GroupStatsDialog.py" line="1082"/>
-        <source>unique</source>
-        <translation>valeur unique</translation>
     </message>
 </context>
 </TS>

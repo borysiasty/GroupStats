@@ -71,19 +71,19 @@ class GroupStats:
 
     # run method that performs all the real work
     def run(self):
-        warstwy = QgsProject.instance().mapLayers()        # Wczytanie słownika warstw z projektu
-        listaWarstw = []
-        for id in warstwy.keys():                                   # Wczytanie nazw warstw do okna
-            if warstwy[id].type() == QgsMapLayer.VectorLayer:
-                listaWarstw.append((warstwy[id].name(), id))
+        mapLayers = QgsProject.instance().mapLayers()        # Load layers dictionary from the project
+        layerList = []
+        for id in mapLayers.keys():                                   # Loading layer names into the window
+            if mapLayers[id].type() == QgsMapLayer.VectorLayer:
+                layerList.append((mapLayers[id].name(), id))
 
-        if len(listaWarstw) == 0:
+        if len(layerList) == 0:
             QMessageBox.information(None,
                                     QCoreApplication.translate('GroupStats', 'Information'),
                                     QCoreApplication.translate('GroupStats', 'Vector layers not found'))
             return
         self.dlg.iface = self.iface
-        self.dlg.ustawWarstwy(listaWarstw)
+        self.dlg.setLayers(layerList)
         
         # show the dialog
         self.dlg.show()

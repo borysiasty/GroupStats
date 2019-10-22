@@ -29,16 +29,16 @@
     <property name="title">
      <string>&amp;Data</string>
     </property>
-    <addaction name="actionKopiuj"/>
-    <addaction name="actionKopiujZaznaczone"/>
-    <addaction name="actionZapiszCSV"/>
-    <addaction name="actionZapiszCSVZaznaczone"/>
+    <addaction name="actionCopy"/>
+    <addaction name="actionCopySelected"/>
+    <addaction name="actionSaveCSV"/>
+    <addaction name="actionSaveCSVSelected"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
      <string>W&amp;indow</string>
     </property>
-    <addaction name="actionPokazPanel"/>
+    <addaction name="actionShowPanel"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -50,8 +50,8 @@
     <property name="title">
      <string>Feat&amp;ures</string>
     </property>
-    <addaction name="actionPokazNaMapie"/>
-    <addaction name="actionPolaczZaznaczoneObiekty"/>
+    <addaction name="actionShowOnMap"/>
+    <addaction name="actionLinkSelectedObjects"/>
    </widget>
    <addaction name="menuData"/>
    <addaction name="menuFeatures"/>
@@ -59,7 +59,7 @@
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <widget class="QDockWidget" name="panelSterowania">
+  <widget class="QDockWidget" name="controlPanel">
    <property name="enabled">
     <bool>true</bool>
    </property>
@@ -102,7 +102,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QComboBox" name="warstwa">
+        <widget class="QComboBox" name="layer">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -125,7 +125,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QListView" name="listaPol">
+        <widget class="QListView" name="listHalf">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
            <horstretch>0</horstretch>
@@ -156,7 +156,7 @@ p, li { white-space: pre-wrap; }
        <item>
         <layout class="QGridLayout" name="gridLayout_2">
          <item row="3" column="1">
-          <widget class="QListView" name="wartosci">
+          <widget class="QListView" name="values">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
              <horstretch>0</horstretch>
@@ -186,7 +186,7 @@ p, li { white-space: pre-wrap; }
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QListView" name="kolumny">
+          <widget class="QListView" name="columns">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
              <horstretch>0</horstretch>
@@ -215,7 +215,7 @@ p, li { white-space: pre-wrap; }
           </widget>
          </item>
          <item row="3" column="0">
-          <widget class="QListView" name="wiersze">
+          <widget class="QListView" name="rows">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
              <horstretch>0</horstretch>
@@ -270,7 +270,7 @@ p, li { white-space: pre-wrap; }
           </widget>
          </item>
          <item row="1" column="0">
-          <widget class="QPlainTextEdit" name="filtr">
+          <widget class="QPlainTextEdit" name="_filter">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
              <horstretch>0</horstretch>
@@ -298,7 +298,7 @@ p, li { white-space: pre-wrap; }
           </widget>
          </item>
          <item row="0" column="0">
-          <widget class="QToolButton" name="filtrButton">
+          <widget class="QToolButton" name="filterButton">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -358,7 +358,7 @@ p, li { white-space: pre-wrap; }
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QCheckBox" name="tylkoZaznaczone">
+        <widget class="QCheckBox" name="onlySelected">
          <property name="enabled">
           <bool>true</bool>
          </property>
@@ -390,7 +390,7 @@ p, li { white-space: pre-wrap; }
         </spacer>
        </item>
        <item>
-        <widget class="QPushButton" name="wyczysc">
+        <widget class="QPushButton" name="clear">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -405,7 +405,7 @@ p, li { white-space: pre-wrap; }
       </layout>
      </item>
      <item>
-      <widget class="QPushButton" name="oblicz">
+      <widget class="QPushButton" name="calculate">
        <property name="enabled">
         <bool>false</bool>
        </property>
@@ -423,12 +423,12 @@ p, li { white-space: pre-wrap; }
     </layout>
    </widget>
   </widget>
-  <action name="actionKopiuj">
+  <action name="actionCopy">
    <property name="text">
     <string>&amp;Copy all to clipboard</string>
    </property>
   </action>
-  <action name="actionZapiszCSV">
+  <action name="actionSaveCSV">
    <property name="enabled">
     <bool>true</bool>
    </property>
@@ -436,12 +436,12 @@ p, li { white-space: pre-wrap; }
     <string>&amp;Save all to CSV file</string>
    </property>
   </action>
-  <action name="actionPokazPanel">
+  <action name="actionShowPanel">
    <property name="text">
     <string>&amp;Show Control panel</string>
    </property>
   </action>
-  <action name="actionKopiujZaznaczone">
+  <action name="actionCopySelected">
    <property name="enabled">
     <bool>true</bool>
    </property>
@@ -449,7 +449,7 @@ p, li { white-space: pre-wrap; }
     <string>Copy selected &amp;to clipboard</string>
    </property>
   </action>
-  <action name="actionZapiszCSVZaznaczone">
+  <action name="actionSaveCSVSelected">
    <property name="enabled">
     <bool>true</bool>
    </property>
@@ -457,7 +457,7 @@ p, li { white-space: pre-wrap; }
     <string>Save selected to CSV &amp;file</string>
    </property>
   </action>
-  <action name="actionPokazNaMapie">
+  <action name="actionShowOnMap">
    <property name="enabled">
     <bool>true</bool>
    </property>
@@ -470,7 +470,7 @@ p, li { white-space: pre-wrap; }
     <string>&amp;Tutorial</string>
    </property>
   </action>
-  <action name="actionPolaczZaznaczoneObiekty">
+  <action name="actionLinkSelectedObjects">
    <property name="enabled">
     <bool>false</bool>
    </property>

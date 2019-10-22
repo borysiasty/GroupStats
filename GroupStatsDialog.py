@@ -24,297 +24,295 @@ class GroupStatsDialog(QMainWindow):
         self.ui = FORM_CLASS()
         self.ui.setupUi(self)
 
-        self.ui.wyniki = OknoWyniki(self.ui.centralwidget)
+        self.ui.result = WindowResults(self.ui.centralwidget)
 
-        self.ui.horizontalLayout.addWidget(self.ui.wyniki)
+        self.ui.horizontalLayout.addWidget(self.ui.result)
 
-        self.obliczenia = Obliczenia(self)
+        self.calculations = Calculations(self)
 
-        self.ui.listaPol.setAcceptDrops(True)
-        self.ui.listaPol.setModelColumn(2)
+        self.ui.listHalf.setAcceptDrops(True)
+        self.ui.listHalf.setModelColumn(2)
 
-        self.ui.wiersze.setAcceptDrops(True)
-        self.ui.kolumny.setAcceptDrops(True)
-        self.ui.wartosci.setAcceptDrops(True)
+        self.ui.rows.setAcceptDrops(True)
+        self.ui.columns.setAcceptDrops(True)
+        self.ui.values.setAcceptDrops(True)
 
-        self.ui.oblicz.clicked.connect(self.pokazWynik)
-        self.ui.wyczysc.clicked.connect(self.wyczyscWybor)
-        self.ui.filtrButton.clicked.connect(self.ustawFiltr)
-        self.ui.warstwa.currentIndexChanged.connect(self.wyborWarstwy)   # Sygnał wyboru warstwy
+        self.ui.calculate.clicked.connect(self.showScore)
+        self.ui.clear.clicked.connect(self.clearChoice)
+        self.ui.filterButton.clicked.connect(self.setFilter)
+        self.ui.layer.currentIndexChanged.connect(self.layerSelection)   # Layer selection signal
 
-        slownikPol =  {'atrybutyTxt':[('Rejon',1), ('Posterunek',2)],
-                    'atrybutyLicz':[('Moc stacji', 3)],
-                    'geometria':[('Dlugosc', 1), ('Powierzchnia', 2)],
-                    'obliczenia':[('Liczebnosc', 1), ('Suma', 2), ('Srednia', 3), ('Odchylenie statystyczne', 4)]}
+        dictionary =  {'attributeTxt':[('Rejon',1), ('Posterunek',2)],
+                    'countAttributes':[('Moc stacji', 3)],
+                    'geometry':[('Length', 1), ('Area', 2)],
+                    'calculations':[('Count', 1), ('Sum', 2), ('Average', 3), ('Standard deviation', 4)]}
 
         self.tm1 = ModelListaPol(self)
-        self.ui.listaPol.setModel(self.tm1)
+        self.ui.listHalf.setModel(self.tm1)
 
-        self.tm2 = ModelWiK(self)
+        self.tm2 = ModelRowsColumns(self)
         #tm2.ustawInneModele(tm1)
-        self.ui.wiersze.setModel(self.tm2)
+        self.ui.rows.setModel(self.tm2)
 
-        self.tm3 = ModelWiK(self)
+        self.tm3 = ModelRowsColumns(self)
         #tm3.ustawInneModele(tm1)
-        self.ui.kolumny.setModel(self.tm3)
+        self.ui.columns.setModel(self.tm3)
 
-        self.tm4 = ModelWartosci(self)
-        self.ui.wartosci.setModel(self.tm4)
+        self.tm4 = ValueModel(self)
+        self.ui.values.setModel(self.tm4)
 
-        self.tm2.ustawInneModele(self.tm3, self.tm4)
-        self.tm3.ustawInneModele(self.tm2, self.tm4)
-        self.tm4.ustawInneModele(self.tm2, self.tm3)
+        self.tm2.setOtherModels(self.tm3, self.tm4)
+        self.tm3.setOtherModels(self.tm2, self.tm4)
+        self.tm4.setOtherModels(self.tm2, self.tm3)
 
-        self.tm2.rowsInserted.connect(self.blokujObliczenia)   # Sygnał wyboru warstwy
-        self.tm3.rowsInserted.connect(self.blokujObliczenia)   # Sygnał wyboru warstwy
-        self.tm4.rowsInserted.connect(self.blokujObliczenia)   # Sygnał wyboru warstwy
-        self.tm2.rowsRemoved.connect(self.blokujObliczenia)   # Sygnał wyboru warstwy
-        self.tm3.rowsRemoved.connect(self.blokujObliczenia)   # Sygnał wyboru warstwy
-        self.tm4.rowsRemoved.connect(self.blokujObliczenia)   # Sygnał wyboru warstwy
+        self.tm2.rowsInserted.connect(self.blockCalculations)   # Layer selection signal
+        self.tm3.rowsInserted.connect(self.blockCalculations)   # Layer selection signal
+        self.tm4.rowsInserted.connect(self.blockCalculations)   # Layer selection signal
+        self.tm2.rowsRemoved.connect(self.blockCalculations)   # Layer selection signal
+        self.tm3.rowsRemoved.connect(self.blockCalculations)   # Layer selection signal
+        self.tm4.rowsRemoved.connect(self.blockCalculations)   # Layer selection signal
 
-        self.ui.actionKopiuj.triggered.connect(self.kopiowanie)   # Sygnał wyboru warstwy
-        self.ui.actionKopiujZaznaczone.triggered.connect(self.kopiowanieZaznaczonych)   # Sygnał wyboru warstwy
-        self.ui.actionZapiszCSV.triggered.connect(self.eksportCSV)   # Sygnał wyboru warstwy
-        self.ui.actionZapiszCSVZaznaczone.triggered.connect(self.eksportCSVZaznaczonych)   # Sygnał wyboru warstwy
-        self.ui.actionPokazPanel.triggered.connect(self.pokazPanelSterowania)   # Sygnał wyboru warstwy
-        self.ui.actionPokazNaMapie.triggered.connect(self.pokazNaMapie)   # Sygnał wyboru warstwy
-        self.ui.actionTutorial.triggered.connect(self.pokazTutorial)   # Sygnał wyboru warstwy
+        self.ui.actionCopy.triggered.connect(self.duplication)   # Layer selection signal
+        self.ui.actionCopySelected.triggered.connect(self.copyMarked)   # Layer selection signal
+        self.ui.actionSaveCSV.triggered.connect(self.exportToCSV)   # Layer selection signal
+        self.ui.actionSaveCSVSelected.triggered.connect(self.exportMarkedToCSV)   # Layer selection signal
+        self.ui.actionShowPanel.triggered.connect(self.showControlPanel)   # Layer selection signal
+        self.ui.actionShowOnMap.triggered.connect(self.showOnMap)   # Layer selection signal
+        self.ui.actionTutorial.triggered.connect(self.showTutorial)   # Layer selection signal
 
-        self.ui.wyniki.verticalHeader().sortIndicatorChanged.connect(self.sortRows)   # Sygnał wyboru warstwy
-
-
-    def sortRows(self,wiersz,tryb):
-            self.ui.wyniki.model().sortRows(wiersz,tryb)
+        self.ui.result.verticalHeader().sortIndicatorChanged.connect(self.sortRows)   # Layer selection signal
 
 
-    def blokujObliczenia(self, x, y, z): #gotowe
-        wartosci = self.tm4.dane
-        kolumny = self.tm3.dane
-        wiersze = self.tm2.dane
-        # Jeżeli w polu wartości są liczby (atrybuty lub geometria) i wybrano jakąś funcję obliczającą
-        if  ('geometria' in [a[0] for a in wartosci] or 'atrybutyLicz' in [a[0] for a in wartosci]) and\
-            'obliczenia' in [a[0] for a in wartosci+wiersze+kolumny]:
-            self.ui.oblicz.setEnabled(True)
-        # Jeżeli w polu wartości jest atrybut tekstowy i wybrano dokładnie jedną funkcję - licznik
-        elif 'atrybutyTxt' in [a[0] for a in wartosci] and len([a for a in wartosci+wiersze+kolumny if a[0]=='obliczenia'])>0:
-            if set([a[2] for a in wartosci+wiersze+kolumny if a[0]=='obliczenia']).issubset(set(self.obliczenia.listaText)): #[a for a in wartosci+wiersze+kolumny if a[0]=='obliczenia'][0][2]==0:
-                self.ui.oblicz.setEnabled(True)
+    def sortRows(self, row, mode):
+            self.ui.result.model().sortRows(row, mode)
+
+
+    def blockCalculations(self, x, y, z): #finished
+        values = self.tm4._data
+        columns = self.tm3._data
+        rows = self.tm2._data
+        # If the value field has numbers (attributes or geometry) and some calculate function has been selected
+        if  ('geometry' in [a[0] for a in values] or 'countAttributes' in [a[0] for a in values]) and\
+            'calculations' in [a[0] for a in values+rows+columns]:
+            self.ui.calculate.setEnabled(True)
+        # If the value field has a text attribute and you have selected exactly one function - the counter
+        elif 'attributeTxt' in [a[0] for a in values] and len([a for a in values+rows+columns if a[0]=='calculations'])>0:
+            if set([a[2] for a in values+rows+columns if a[0]=='calculations']).issubset(set(self.calculations.textList)): #[a for a in values+rows+columns if a[0]=='calculations'][0][2]==0:
+                self.ui.calculate.setEnabled(True)
         else:
-            self.ui.oblicz.setEnabled(False)
+            self.ui.calculate.setEnabled(False)
 
 
-    def pokazWynik(self):               #gotowe
-        "Wykonuje obliczenia i wysyła je do wyswietlenia"
+    def showScore(self):               #finished
+        "Performs calculations and sends them for display"
+        chosenRows = tuple(self.tm2._data)                                               # Reading selected rows from the window
+        chosenColumns = tuple(self.tm3._data)                                               # Reading selected columns from the window
+        chosenValues = tuple(self.tm4._data)                                          # Reading from the window chosenj values ​​and calculations
+        value = [x for x in chosenValues if x[0]!='calculations'][0]                 # reading the field that has been chosen for calculation (can only be one)
+        if value[0]=='geometry':                                                         # Setting the calculate function depending on the chosen value type
+            if value[2]==1:
+                valueFunction = lambda _object: _object.geometry().length()                  # length
+            elif value[2]==2:
+                valueFunction = lambda _object: _object.geometry().area()                    # area
+        elif value[0]=='attributeTxt':
+            valueFunction = lambda _object: None if _object.attribute(value[1]) is None else _object.attribute(value[1])#.toString()    # text attribute
+        elif value[0]=='countAttributes':
+            valueFunction = lambda _object: None if _object.attribute(value[1]) is None or (
+                    isinstance(_object.attribute(value[1]), QVariant) and
+                    _object.attribute(value[1]).isNull()) else (float(_object.attribute(value[1]).value())
+                    if isinstance(_object.attribute(value[1]), QVariant) else float(_object.attribute(value[1])))
 
-        wybraneWiersze = tuple(self.tm2.dane)                                               # Sczytanie z okna wybranych wierszy
-        wybraneKolumny = tuple(self.tm3.dane)                                               # Sczytanie z okna wybranych kolumn
-        wybraneWartosciiObl = tuple(self.tm4.dane)                                          # Sczytanie z okna wybranej wartosci i obliczenia
+        index = self.ui.layer.currentIndex()                                             # Download chosen layer
+        layerId = self.ui.layer.itemData(index)
+        layer = QgsProject.instance().mapLayer(layerId)#.toString())
 
-        wartosc = [x for x in wybraneWartosciiObl if x[0]!='obliczenia'][0]                 # Sczytanie pola, które zostało wybrane do obliczeń (moe być tylko jedno)
-        if wartosc[0]=='geometria':                                                         # Ustawienie funkcji obliczającej w zależności od typu wybranej wartości
-            if wartosc[2]==1:
-                wartoscFunkcja = lambda obiekt: obiekt.geometry().length()                  # długość
-            elif wartosc[2]==2:
-                wartoscFunkcja = lambda obiekt: obiekt.geometry().area()                    # powierzchnia
-        elif wartosc[0]=='atrybutyTxt':
-            wartoscFunkcja = lambda obiekt: None if obiekt.attribute(wartosc[1])==None else obiekt.attribute(wartosc[1])#.toString()    # atrybut tekstowy
-        elif wartosc[0]=='atrybutyLicz':
-            wartoscFunkcja = lambda obiekt: None if obiekt.attribute(wartosc[1])==None else float(obiekt.attribute(wartosc[1]))         #.toReal()[0]   # atrybut liczbowy (toReal daje wynik (real, True/False))
-
-        indeks = self.ui.warstwa.currentIndex()                                             # Pobranie wybranej warstwy
-        idWarstwy = self.ui.warstwa.itemData(indeks)
-        warstwa = QgsProject.instance().mapLayer(idWarstwy)#.toString())
-
-        provider = warstwa.dataProvider()
+        provider = layer.dataProvider()
         request = QgsFeatureRequest()
-        filtr = self.ui.filtr.toPlainText()
-        if filtr:
-            request.setFilterExpression(filtr)
+        _filter = self.ui._filter.toPlainText()
+        if _filter:
+            request.setFilterExpression(_filter)
         iterator = provider.getFeatures(request)
 
-        if self.ui.tylkoZaznaczone.isChecked():                                         # Pobranie ID zaznaczonych obiektów
-            zaznaczoneObiekty = warstwa.selectedFeatureIds()
-            tylkoZaznaczone = True
+        if self.ui.onlySelected.isChecked():                                         # Retrieve the IDs of the selected _objects
+            selectedObjects = layer.selectedFeatureIds()
+            onlySelected = True
         else:
-            zaznaczoneObiekty = []
-            tylkoZaznaczone = False
+            selectedObjects = []
+            onlySelected = False
 
-        wyniki = {}                                                                         # Słownik na wyniki {((wiersz)(kolumna)):[[wartosci],[indeksy]}
-        f=QgsFeature()                                                                      # Wyszukiwanie danych do obliczeń
-        liczbaObiektow = provider.featureCount()
-        if liczbaObiektow != 0:
-            procent = 100.00 / liczbaObiektow                                                   # Liczba obiektów
+        result = {}                                                                         # results translator {((row) (column)): [[values], [indexes]}
+        f=QgsFeature()                                                                      # Searching for calculation data
+        numberOfObjects = provider.featureCount()
+        if numberOfObjects != 0:
+            percent = 100.00 / numberOfObjects                                                   # Number of _objects
         else:
-            procent = 100
-        licznik = 0.0
-        licznikNULL = 0
-        while iterator.nextFeature(f):                                                      # dla każdego obiektu...
-            if tylkoZaznaczone==False or (tylkoZaznaczone and (f.id() in zaznaczoneObiekty)):
+            percent = 100
+        counter = 0.0
+        NULLcounter = 0
+        while iterator.nextFeature(f):                                                      # for each object ...
+            if onlySelected==False or (onlySelected and (f.id() in selectedObjects)):
 
-                klucz_kol = []                                                                  # klucz kolumny (kolumna1, kolumna2...)
-                klucz_wie = []                                                                  # klucz wierszy (wiersz1, wiersze2...)
-                klucz = ()
-                for k in wybraneKolumny:                                                        # dla każdej wybranej kolumny sprawdzamy typ kolumny
-                    if k[0]=='geometria':                                                       # i tworzymy klucz kolumny
+                key_column = []                                                                  # key column (column1, column2...)
+                key_row = []                                                                  # key row (rows1, rows2...)
+                key = ()
+                for k in chosenColumns:                                                        # for each chosen column we check the column type
+                    if k[0]=='geometry':                                                       # and create the key column
                         if k[2]==1:
-                            klucz_kol.append(f.geometry().length())
+                            key_column.append(f.geometry().length())
                         elif k[2]==2:
-                            klucz_kol.append(f.geometry().area())
-                    elif k[0]=='atrybutyTxt' or k[0]=='atrybutyLicz':
+                            key_column.append(f.geometry().area())
+                    elif k[0]=='attributeTxt' or k[0]=='countAttributes':
                         if f.attribute(k[1]) == None:
-                            nowyKluczKolumny = ''
+                            newKeyColumns = ''
                         else:
-                            nowyKluczKolumny = f.attribute(k[1])
+                            newKeyColumns = f.attribute(k[1])
 
-                        klucz_kol.append(nowyKluczKolumny)#.toString())
-                for k in wybraneWiersze:                                                        # dla każdego wybranego wiersza sprawdzmy typ wiersza
-                    if k[0]=='geometria':                                                       # i tworzymy klucz wiersza
+                        key_column.append(newKeyColumns)#.toString())
+                for k in chosenRows:                                                        # for each chosen rows we check the rows type
+                    if k[0]=='geometry':                                                       # and create key rows
                         if k[2]==1:
-                            klucz_wie.append(f.geometry().length())
+                            key_row.append(f.geometry().length())
                         elif k[2]==2:
-                            klucz_wie.append(f.geometry().area())
-                    elif k[0]=='atrybutyTxt' or k[0]=='atrybutyLicz':
+                            key_row.append(f.geometry().area())
+                    elif k[0]=='attributeTxt' or k[0]=='countAttributes':
                         if f.attribute(k[1]) == None:
-                            nowyKluczWiersza = ''
+                            newRowKey = ''
                         else:
-                            nowyKluczWiersza = f.attribute(k[1])
+                            newRowKey = f.attribute(k[1])
 
-                        klucz_wie.append(nowyKluczWiersza)
+                        key_row.append(newRowKey)
 
-                klucz = ( tuple(klucz_wie) , tuple(klucz_kol) )                                 # klucz do identyfikacji grup obiektów
+                key = ( tuple(key_row) , tuple(key_column) )                                 # key to identify object groups
+                valueToCalculate = valueFunction(f)
+                if valueToCalculate!=None or self.ui.useNULL.isChecked():
+                    if valueToCalculate==None:
+                        NULLcounter += 1
+                        if value[0]=='countAttributes':
+                            valueToCalculate=0
 
-                wartoscDoObliczen = wartoscFunkcja(f)
-                if wartoscDoObliczen!=None or self.ui.useNULL.isChecked():
-                    if  wartoscDoObliczen==None:
-                        licznikNULL += 1
-                        if wartosc[0]=='atrybutyLicz':
-                            wartoscDoObliczen=0
-
-                    if klucz in wyniki:
-                        wyniki[klucz][0].append(wartoscDoObliczen)                                     # jeśli klucz istnieje to dadawana jest nowa wartosc do listy
+                    if key in result:
+                        result[key][0].append(valueToCalculate)                                     # if key exists, a new value is added to the list
                     else:
-                        wyniki[klucz] = [[wartoscDoObliczen],[]]                                         # jeśli klucz nie istnieje to jest tworona nowa lista
+                        result[key] = [[valueToCalculate],[]]                                         # if key does not exist then a new list is created
 
-                    wyniki[klucz][1].append(f.id())
+                    result[key][1].append(f.id())
                 else:
-                    licznikNULL += 1
+                    NULLcounter += 1
 
-                licznik = licznik + procent
-                self.statusBar().showMessage(QCoreApplication.translate('GroupStats','Calculate... ') + '%.0f%%' % (licznik))         # Wyświetlenie postępu
+                counter = counter + percent
+                self.statusBar().showMessage(QCoreApplication.translate('GroupStats','Calculate... ') + '%.0f%%' % (counter))         # Displaying progress
 
         self.statusBar().showMessage(self.statusBar().currentMessage() + ' |  ' + QCoreApplication.translate('GroupStats','generate view...'))
 
-        klucze = wyniki.keys()                                                              # Znalezienie unikalnych kluczy wierszy i kolumn (osobno)
-        wier = set([])
+        keys = result.keys()                                                              # Finding unique row and column keys (separately)
+        topmost = set([])
         kolu = set([])
-        for z in klucze:                                                                    # dodanie kluczy do zbiorów, aby odrzucić powtórzenia
-            wier.add(z[0])
+        for z in keys:                                                                    # adding keys to collections to reject repetition
+            topmost.add(z[0])
             kolu.add(z[1])
-        wiersze = list(wier)                                                                # lista unikalnych kluczy wierszy
-        kolumny = list(kolu)                                                                # lista unikalnych kluczy kolumn
+        rows = list(topmost)                                                                # list of unique row keys
+        columns = list(kolu)                                                                # list of unique column keys
 
-        wierSlownik={}                                                                      # Stworzenie słowników dla wierszy i kolumn (szybsze wyszukiwanie)
-        for nr, wie in enumerate(wiersze):
-            wierSlownik[wie]=nr
-        kolSlownik={}
-        for nr, kol in enumerate(kolumny):
-            kolSlownik[kol]=nr
+        rowDictionary={}                                                                      # Creating dictionaries for rows and columns (faster search)
+        for nr, row in enumerate(rows):
+            rowDictionary[row]=nr
+        columnDictionary={}
+        for nr, col in enumerate(columns):
+            columnDictionary[col]=nr
 
-        obliczenia = [[x[2] for x in wybraneWartosciiObl if x[0]=='obliczenia'],            # lista wybranych obliczeń w wartościach, wierszach i kolumnach
-                      [x[2] for x in wybraneWiersze      if x[0]=='obliczenia'],
-                      [x[2] for x in wybraneKolumny      if x[0]=='obliczenia']]
+        calculations = [[x[2] for x in chosenValues if x[0]=='calculations'],         # list of selected calculations in values, rows and columns
+                       [x[2] for x in chosenRows      if x[0]=='calculations'],
+                       [x[2] for x in chosenColumns      if x[0]=='calculations']]
 
-        if len(obliczenia[0])!=0:                                                           # Wzięcie do obliczeń tylko niepustej części listy powyżej
-            obliczenie = obliczenia[0]
-        elif len(obliczenia[1])!=0:
-            obliczenie = obliczenia[1]
+        if len(calculations[0])!=0:                                                           # Take to calculations only the non-empty part of the list above
+            calculation = calculations[0]
+        elif len(calculations[1])!=0:
+            calculation = calculations[1]
         else:
-            obliczenie = obliczenia[2]
+            calculation = calculations[2]
 
-        dane = []                                                                           # Stworzenie pustej tablicy na dane (l.wierszy x l.kolumn)
-        for x in range( max( len(wiersze) , len(wiersze)*len(obliczenia[1]))):
-            dane.append(max(len(kolumny),len(kolumny)*len(obliczenia[2]))*[('',())])
+        data = []                                                                           # Creating an empty array for the date (l.row x l.column)
+        for x in range( max( len(rows) , len(rows)*len(calculations[1]))):
+            data.append(max(len(columns),len(columns)*len(calculations[2]))*[('',())])
 
-        for x in klucze:                                                                    # Obliczenie wartości dla wszystkich kluczy
-            nrw = wierSlownik[x[0]]                                                         # nr wiersza w tabeli danych dla wybranego klucza
-            nrk = kolSlownik[x[1]]                                                          # nr kolumny w tabeli danych dla wybranego klucza
-            for n,y in enumerate(obliczenie):                                                       # wykonanie wszystkich obliczeń dla wszystkich kluczy
-                if len(obliczenia[1])>0:
-                    dane[nrw*len(obliczenia[1])+n][nrk] = [self.obliczenia.lista[y][1](wyniki[x][0]),wyniki[x][1]]    # wstawienie wyniku jeśli obliczenia z wierszy
-                elif len(obliczenia[2])>0:
-                    dane[nrw][nrk*len(obliczenia[2])+n] = [self.obliczenia.lista[y][1](wyniki[x][0]),wyniki[x][1]]    # wstawienie wyniku jeśli obliczenia z kolumn
+        for x in keys:                                                                    # Calculation of values ​​for all keys
+            nrw = rowDictionary[x[0]]                                                         # rows no in the data table for the chosen key
+            nrk = columnDictionary[x[1]]                                                          # column number in the data table for the chosen key
+            for n,y in enumerate(calculation):                                                       # making all calculates for all keys
+                if len(calculations[1])>0:
+                    data[nrw*len(calculations[1])+n][nrk] = [self.calculations.list[y][1](result[x][0]), result[x][1]]    # insert result if calculations with row
+                elif len(calculations[2])>0:
+                    data[nrw][nrk*len(calculations[2])+n] = [self.calculations.list[y][1](result[x][0]), result[x][1]]    # insert result if calculations from columns
                 else:
-                    dane[nrw][nrk] = [self.obliczenia.lista[y][1](wyniki[x][0]),wyniki[x][1]]                         # wstawienie wyniku jeśli obliczenia z wartosci
+                    data[nrw][nrk] = [self.calculations.list[y][1](result[x][0]), result[x][1]]                         # insert result if calculations with values
 
         atr = {}                                                                            # Attributes as dict.
         for i in range(provider.fields().count()):
             atr[i] = provider.fields().at(i)
-
-        nazwyWierszy=[]                                                                     # Lista z nazwami wierszy
-        for x in wybraneWiersze:
-            if x[0]=='geometria':
-                nazwyWierszy.append(x[1])
-            elif x[0]!='obliczenia':
-                nazwyWierszy.append(atr[x[2]].name())
-        nazwyKolumn=[]                                                                      # Lista z nazwami kolumn
-        for x in wybraneKolumny:
-            if x[0]=='geometria':
-                nazwyKolumn.append(x[1])
-            elif x[0]!='obliczenia':
-                nazwyKolumn.append(atr[x[2]].name())
-
-        nazwaKolumnyObiczen=()                                                              # Wstawienie nazw wierszy i kolumn z obliczeniami
-        nazwaWierszaObliczen=()
-        if len(obliczenia[1])>0:
-            obl = [self.obliczenia.lista[x][0] for x in obliczenia[1]]
-            wiersze1 = [w+(o,) for w in wiersze for o in obl]
-            kolumny1 = kolumny
-            nazwaWierszaObliczen=(QCoreApplication.translate('GroupStats','Function'),)
-        elif len(obliczenia[2])>0:
-            obl = [self.obliczenia.lista[x][0] for x in obliczenia[2]]
-            kolumny1 = [w+(o,) for w in kolumny for o in obl]
-            wiersze1 = wiersze
-            nazwaKolumnyObiczen=(QCoreApplication.translate('GroupStats','Function'),)
+        rowNames=[]                                                                     # List with names of rows
+        for x in chosenRows:
+            if x[0]=='geometry':
+                rowNames.append(x[1])
+            elif x[0]!='calculations':
+                rowNames.append(atr[x[2]].name())
+        colNames=[]                                                                      # List with column names
+        for x in chosenColumns:
+            if x[0]=='geometry':
+                colNames.append(x[1])
+            elif x[0]!='calculations':
+                colNames.append(atr[x[2]].name())
+        nameColumnsCalculations=()                                                            # Insert row and column names with calculations
+        nameRowsCalculation=()
+        if len(calculations[1])>0:
+            obl = [self.calculations.list[x][0] for x in calculations[1]]
+            rows1 = [w+(o,) for w in rows for o in obl]
+            columns1 = columns
+            nameRowsCalculation=(QCoreApplication.translate('GroupStats','Function'),)
+        elif len(calculations[2])>0:
+            obl = [self.calculations.list[x][0] for x in calculations[2]]
+            columns1 = [w+(o,) for w in columns for o in obl]
+            rows1 = rows
+            nameColumnsCalculations=(QCoreApplication.translate('GroupStats','Function'),)
         else:
-            kolumny1 = kolumny
-            wiersze1 = wiersze
-        if len(wiersze1)>0 and len(wiersze1[0])>0:
-            wiersze1.insert(0,tuple(nazwyWierszy)+nazwaWierszaObliczen)
-        if len(kolumny1)>0 and len(kolumny1[0])>0:
-            kolumny1.insert(0,tuple(nazwyKolumn)+nazwaKolumnyObiczen)
+            columns1 = columns
+            rows1 = rows
 
+        if len(rows1)>0 and len(rows1[0])>0:
+            rows1.insert(0,tuple(rowNames)+nameRowsCalculation)
+        if len(columns1)>0 and len(columns1[0])>0:
+            columns1.insert(0,tuple(colNames)+nameColumnsCalculations)
 
-        if len(wiersze1)>0 and len(kolumny1)>0:
-            self.ui.wyniki.setUpdatesEnabled(False)
-            self.tm5 = ModelWyniki(dane, wiersze1, kolumny1, warstwa)
-            self.ui.wyniki.setModel(self.tm5)
-            for i in range(len(kolumny1[0]),0,-1):
-                self.ui.wyniki.verticalHeader().setSortIndicator( i-1, Qt.AscendingOrder )
-            for i in range(len(wiersze1[0]),0,-1):
-                self.ui.wyniki.horizontalHeader().setSortIndicator( i-1, Qt.AscendingOrder )
-            komunikat = self.statusBar().currentMessage()
-            procent = 100.00 / self.tm5.columnCount()
-            licznik = 0
+        if len(rows1)>0 and len(columns1)>0:
+            self.ui.result.setUpdatesEnabled(False)
+            self.tm5 = ResultModel(data, rows1, columns1, layer)
+            self.ui.result.setModel(self.tm5)
+            for i in range(len(columns1[0]),0,-1):
+                self.ui.result.verticalHeader().setSortIndicator( i-1, Qt.AscendingOrder )
+            for i in range(len(rows1[0]),0,-1):
+                self.ui.result.horizontalHeader().setSortIndicator( i-1, Qt.AscendingOrder )
+            statement = self.statusBar().currentMessage()
+            percent = 100.00 / self.tm5.columnCount()
+            counter = 0
             for i in range(self.tm5.columnCount()):
-                self.ui.wyniki.resizeColumnToContents(i)
-                licznik = licznik + procent
-                self.statusBar().showMessage(komunikat + '%.0f%%' % (licznik))
+                self.ui.result.resizeColumnToContents(i)
+                counter = counter + percent
+                self.statusBar().showMessage(statement + '%.0f%%' % (counter))
 
-            self.ui.wyniki.setUpdatesEnabled(True)
+            self.ui.result.setUpdatesEnabled(True)
 
-            if licznikNULL==1:
+            if NULLcounter==1:
                 rekordy='record'
             else:
                 rekordy='records'
 
-            if self.ui.useNULL.isChecked() and licznikNULL>0:
-                tekstNULL = QCoreApplication.translate('GroupStats','  (used %s %s with null value in "%s" field)' % (licznikNULL, rekordy, wartosc[1]))
-            elif self.ui.useNULL.isChecked()==False and licznikNULL>0:
-                tekstNULL = QCoreApplication.translate('GroupStats','  (not used %s %s with null value in "%s" field)' % (licznikNULL, rekordy, wartosc[1]))
+            if self.ui.useNULL.isChecked() and NULLcounter>0:
+                textNULL = QCoreApplication.translate('GroupStats','  (used %s %s with null value in "%s" field)' % (NULLcounter, rekordy, value[1]))
+            elif self.ui.useNULL.isChecked()==False and NULLcounter>0:
+                textNULL = QCoreApplication.translate('GroupStats','  (not used %s %s with null value in "%s" field)' % (NULLcounter, rekordy, value[1]))
             else:
-                tekstNULL = ''
+                textNULL = ''
 
-            self.statusBar().showMessage(self.statusBar().currentMessage() + ' |  ' + QCoreApplication.translate('GroupStats','done.')+tekstNULL, 20000)
+            self.statusBar().showMessage(self.statusBar().currentMessage() + ' |  ' + QCoreApplication.translate('GroupStats','done.')+textNULL, 20000)
 
         else:
             try:
@@ -322,277 +320,276 @@ class GroupStatsDialog(QMainWindow):
             except AttributeError:
                 pass
 
-            self.ui.wyniki.setModel(None)
+            self.ui.result.setModel(None)
             self.statusBar().showMessage(QCoreApplication.translate('GroupStats','No data found.'), 10000)
 
 
-    def ustawWarstwy (self, warstwy):   #gotowe
-        "Dodaje dostępne wartwy do listy wyboru w oknie"
+    def setLayers (self, layer):   #finished
+        "Adds available layers to the selection list in the window"
 
-        indeks = self.ui.warstwa.currentIndex()
-        if indeks !=-1:
-            idWarstwy = self.ui.warstwa.itemData(indeks)                        # id wcześniej wybranej warstwy
+        index = self.ui.layer.currentIndex()
+        if index !=-1:
+            layerId = self.ui.layer.itemData(index)                        # id of the previously selected layer
 
-        self.ui.warstwa.blockSignals(True)
-        self.ui.warstwa.clear()                                                 # wypełnienie comboBoxa nową listą warstw
-        warstwy.sort(key=lambda x: x[0].lower())
-        for i in warstwy:
-            self.ui.warstwa.addItem(i[0], i[1])
+        self.ui.layer.blockSignals(True)
+        self.ui.layer.clear()                                            # fill the comboBox with a new list of layers
+        layer.sort(key=lambda x: x[0].lower())
+        for i in layer:
+            self.ui.layer.addItem(i[0], i[1])
 
-        if indeks !=-1:
-            indeks2 = self.ui.warstwa.findData(idWarstwy)                       # jeżeli wcześniej wybrana warstwa jest to liście to wybranie jej
-            if indeks2 !=-1:
-                self.ui.warstwa.setCurrentIndex(indeks2)
+        if index !=-1:
+            index2 = self.ui.layer.findData(layerId)                       # if the previously selected layer is a list then select it
+            if index2 !=-1:
+                self.ui.layer.setCurrentIndex(index2)
             else:
-                self.wyborWarstwy(0)                                            # jeśli nie ma to wybranie pierwszej
+                self.layerSelection(0)                                            # if it doesn't have the first one
         else:
-            self.wyborWarstwy(0)
-        self.ui.warstwa.blockSignals(False)
+            self.layerSelection(0)
+        self.ui.layer.blockSignals(False)
 
 
-    def wyborWarstwy(self, indeks):     #gotowe
-        "Uruchamiane po wybraniu warstwy z listy. Ustawia nową listę pól do wyboru i kasuje okna z już wybranymi polami"
+    def layerSelection(self, index):     #finished
+        "Runs after selecting layer from the list. Sets a new list of fields to choose from and deletes windows with already selected fields"
 
-        idW = self.ui.warstwa.itemData(indeks)                          # Pobranie ID wybranej warstwy
-        warstwa = QgsProject.instance().mapLayer(idW)#.toString())
-        provider = warstwa.dataProvider()
+        idW = self.ui.layer.itemData(index)                          # Get the ID of the selected layer
+        layer = QgsProject.instance().mapLayer(idW)#.toString())
+        provider = layer.dataProvider()
         fields = provider.fields()
 
-        slownikPol = {}
-        if warstwa.geometryType() in (QgsWkbTypes.PointGeometry, QgsWkbTypes.NullGeometry):
-            slownikPol['geometria'] =  []
-        elif warstwa.geometryType() == QgsWkbTypes.LineGeometry:                             # line
-            slownikPol ['geometria'] = [(QCoreApplication.translate('GroupStats','Length'), 1)]
-        elif warstwa.geometryType() == QgsWkbTypes.PolygonGeometry:                             # polygon
-            slownikPol ['geometria'] = [(QCoreApplication.translate('GroupStats','Perimeter'), 1), (QCoreApplication.translate('GroupStats','Area'), 2)]
+        dictionary = {}
+        if layer.geometryType() in (QgsWkbTypes.PointGeometry, QgsWkbTypes.NullGeometry):
+            dictionary['geometry'] =  []
+        elif layer.geometryType() == QgsWkbTypes.LineGeometry:                             # line
+            dictionary['geometry'] = [(QCoreApplication.translate('GroupStats','Length'), 1)]
+        elif layer.geometryType() == QgsWkbTypes.PolygonGeometry:                             # polygon
+            dictionary['geometry'] = [(QCoreApplication.translate('GroupStats','Perimeter'), 1), (QCoreApplication.translate('GroupStats','Area'), 2)]
 
-        slownikPol ['atrybutyLicz'] = []
-        slownikPol ['atrybutyTxt'] = []
+        dictionary['countAttributes'] = []
+        dictionary['attributeTxt'] = []
+
         for i in range(fields.count()):
-            atrybut = fields.at(i)
-            if atrybut.typeName().upper() in ('REAL', 'FLOAT4') or atrybut.typeName().upper().startswith('INT'):
-                slownikPol['atrybutyLicz'].append((atrybut.name(), i))
+            field = fields.at(i)
+            if field.typeName().upper() in ('REAL', 'FLOAT4', 'DOUBLE') or field.typeName().upper().startswith('INT'):
+                dictionary['countAttributes'].append((field.name(), i))
             else:
-                slownikPol['atrybutyTxt'].append((atrybut.name(), i))
+                dictionary['attributeTxt'].append((field.name(), i))
 
-        slownikPol['obliczenia']=[]
-        obl = self.obliczenia.lista
+        dictionary['calculations']=[]
+        obl = self.calculations.list
         for c,b in obl.items():
-            slownikPol['obliczenia'].append((b[0],c))
+            dictionary['calculations'].append((b[0],c))
 
         del(self.tm1)
         self.tm1 = ModelListaPol()
-        self.ui.listaPol.setModel(self.tm1)
-        klucze = ['obliczenia', 'geometria']
-        for i in klucze:
-            j = slownikPol[i]
+        self.ui.listHalf.setModel(self.tm1)
+        keys = ['calculations', 'geometry']
+        for i in keys:
+            j = dictionary[i]
             j.sort(key=lambda x: x[0].lower())
-            wiersze=[]
+            rows=[]
             for k, l in j:
-                wiersze.append((i,k,l))
-            self.tm1.insertRows( 0, len(wiersze), QModelIndex(), wiersze)
+                rows.append((i,k,l))
+            self.tm1.insertRows( 0, len(rows), QModelIndex(), rows)
 
-        klucze = ['atrybutyLicz', 'atrybutyTxt']
-        wiersze=[]
-        for i in klucze:
-            j = slownikPol[i]
+        keys = ['countAttributes', 'attributeTxt']
+        rows=[]
+        for i in keys:
+            j = dictionary[i]
             for k, l in j:
-                wiersze.append((i,k,l))
+                rows.append((i,k,l))
 
-        wiersze.sort(key=lambda x: x[1].lower())
-        self.tm1.insertRows( 0, len(wiersze), QModelIndex(), wiersze)
+        rows.sort(key=lambda x: x[1].lower())
+        self.tm1.insertRows( 0, len(rows), QModelIndex(), rows)
 
-        self.wyczyscWybor()
+        self.clearChoice()
 
 
-    def wyczyscWybor(self):             # gotowe
-        " Czyści okna z wybranymi wierszami, kolumnami i wartościami"
+    def clearChoice(self):             # finished
+        " Clears windows with selected rows, columns and values"
         self.tm2.removeRows(0, self.tm2.rowCount() ,QModelIndex())
         self.tm3.removeRows(0, self.tm3.rowCount() ,QModelIndex())
         self.tm4.removeRows(0, self.tm4.rowCount() ,QModelIndex())
-        self.ui.filtr.setPlainText('')
+        self.ui._filter.setPlainText('')
 
 
-    def pokazPanelSterowania(self):     # gotowe
+    def showControlPanel(self):     # finished
         ""
 
-        self.ui.panelSterowania.setVisible(True)
+        self.ui.controlPanel.setVisible(True)
 
-    def pokazTutorial(self):
+    def showTutorial(self):
         url = "http://underdark.wordpress.com/2013/02/02/group-stats-tutorial/"
         webbrowser.open (url, 2)
 
-    def ustawFiltr(self):               # gotowe 2
-        indeks = self.ui.warstwa.currentIndex()                                             # Pobranie wybranej warstwy
-        idWarstwy = self.ui.warstwa.itemData(indeks)
-        warstwa = QgsProject.instance().mapLayer(str(idWarstwy))
+    def setFilter(self):               # finished 2
+        index = self.ui.layer.currentIndex()                                             # Download selected layer
+        layerId = self.ui.layer.itemData(index)
+        layer = QgsProject.instance().mapLayer(str(layerId))
 
-        tekst = self.ui.filtr.toPlainText()                                                 # Pobranie tekstu z okna i wyświetlenie okna zapytań
-        q = QgsSearchQueryBuilder(warstwa)
-        q.setSearchString(tekst)
+        text = self.ui._filter.toPlainText()                                                 # Retrieve the text from the window and display the query window
+        q = QgsSearchQueryBuilder(layer)
+        q.setSearchString(text)
         q.exec_()
 
-        self.ui.filtr.setPlainText(q.searchString ())                                       # Wstawienie zapytania do okna
+        self.ui._filter.setPlainText(q.searchString ())                                       # Insert a query into the window
 
-    # ------------------------ KOPIOWANIE DANYCH DO SCHOWKA I ZAPIS CSV ----------------------------START
+    # ------------------------ COPYING DATA TO THE CLIPBOARD AND CSV SAVE ----------------------------START
 
-    def kopiowanie (self):
-        "Kopiowanie wszystkich danych do schowka"
-        tekst, test = self.pobierzDaneZTabeli(True, True)
+    def duplication (self):
+        "Copy all data to the clipboard"
+        text, test = self.downloadDataFromTheTable(True, True)
         if test==True:
-            schowek = QApplication.clipboard()
-            schowek.setText(tekst)
+            clipboard = QApplication.clipboard()
+            clipboard.setText(text)
 
-    def kopiowanieZaznaczonych (self):
-        "Kopiowanie zaznaczonych danych do schowka"
-        tekst, test = self.pobierzDaneZTabeli(False, True)
+    def copyMarked (self):
+        "Copy selected data to the clipboard"
+        text, test = self.downloadDataFromTheTable(False, True)
         if test==True:
-            schowek = QApplication.clipboard()
-            schowek.setText(tekst)
+            clipboard = QApplication.clipboard()
+            clipboard.setText(text)
 
-    def eksportCSV (self):
-        "Zapisuje wszystkie dane do pliku CSV"
-        dane, test = self.pobierzDaneZTabeli(True, False)
+    def exportToCSV (self):
+        "Saves all data to CSV file"
+        data, test = self.downloadDataFromTheTable(True, False)
         if test==True:
-            self.zapiszDaneWPliku(dane)
+            self.saveFileData(data)
 
-    def eksportCSVZaznaczonych (self):
-        "Zapisuje zaznaczone dane do pliku CSV"
-        dane, test = self.pobierzDaneZTabeli(False, False)
+    def exportMarkedToCSV (self):
+        "Saves selected data to a CSV file"
+        data, test = self.downloadDataFromTheTable(False, False)
         if test==True:
-            self.zapiszDaneWPliku(dane)
+            self.saveFileData(data)
 
-    def zapiszDaneWPliku (self, dane):
-        "Obsługa zapisu danych do pliku"
-        oknoPlikow = QFileDialog()                                              # Wybór pliku do zapisu
-        oknoPlikow.setAcceptMode(1)
-        oknoPlikow.setDefaultSuffix("csv")
-        oknoPlikow.setNameFilters(["CSV files (*.csv)", "All files (*)"])
-        if oknoPlikow.exec_() == 0:                                             # Nie wybrano żadnego pliku - wyjście
+    def saveFileData (self, data):
+        "Support for writing data to a file"
+        fileWindow = QFileDialog()                                              # Select file to write
+        fileWindow.setAcceptMode(1)
+        fileWindow.setDefaultSuffix("csv")
+        fileWindow.setNameFilters(["CSV files (*.csv)", "All files (*)"])
+        if fileWindow.exec_() == 0:                                             # No file selected - output
             return
-        nazwaPliku = oknoPlikow.selectedFiles()[0]
-        plik = open(nazwaPliku, 'w')                                           # Otwarcie pliku do zapisu
-        plikCSV = csv.writer( plik, delimiter=';' )
-        for i in dane:                                                          # Kopiowanie danych z tabeli
-            #plikCSV.writerow([bytes(x, 'utf-8') for x in i])
-            plikCSV.writerow(i)
-        plik.close()
+        fileName = fileWindow.selectedFiles()[0]
+        _file = open(fileName, 'w')                                            # Open file for writing
+        csvfile = csv.writer( _file, delimiter=';' )
+        for i in data:                                                          # Copying data from the table
+            #csvfile.writerow([bytes(x, 'utf-8') for x in i])
+            csvfile.writerow(i)
+        _file.close()
 
-    def pobierzDaneZTabeli(self, wszystkieDane=True, znakiSterujace=False):
-        if self.ui.wyniki.model()==None:
+    def downloadDataFromTheTable(self, allData=True, controlCharacters=False):
+        if self.ui.result.model()==None:
             QMessageBox.information(None,QCoreApplication.translate('GroupStats','Information'), \
                 QCoreApplication.translate('GroupStats','No data to save/copy'))
             return None, False
 
-        tekst=''
-        dane = []
-        liczbaKolumn = self.tm5.columnCount()
-        liczbaWierszy = self.tm5.rowCount()
-        wiersze = []
-        kolumny = []
+        text=''
+        data = []
+        numberOfColumns = self.tm5.columnCount()
+        numberOfRows = self.tm5.rowCount()
+        rows = []
+        columns = []
 
-        if wszystkieDane == False:                                                               # Jeśli opcja 'tylko zaznaczone' pobranie indeksów zaznaczonych pól
-            listaIndeksow = self.ui.wyniki.selectedIndexes()
-            if len(listaIndeksow)==0:
+        if allData == False:                                                               # If the option 'only checked' get indexes of selected fields
+            indexList = self.ui.result.selectedIndexes()
+            if len(indexList)==0:
                 QMessageBox.information(None,QCoreApplication.translate('GroupStats','Information'), \
                     QCoreApplication.translate('GroupStatsD','No data selected'))
                 return None, False
-            for i in listaIndeksow:
-                wiersze.append(i.row())
-                kolumny.append(i.column())
+            for i in indexList:
+                rows.append(i.row())
+                columns.append(i.column())
 
-        for i in range(liczbaWierszy):                                                          # Kopiowanie danych z tabeli
-            if wszystkieDane or (i in wiersze) or (i < self.tm5.offsetY):
-                wiersz = []
-                for j in range(liczbaKolumn):
-                    if wszystkieDane or (j in kolumny) or (j < self.tm5.offsetX):
-                        wiersz.append(unicode(self.tm5.createIndex(i,j).data()))
-                dane.append(wiersz)
+        for i in range(numberOfRows):                                                          # Copying data from the table
+            if allData or (i in rows) or (i < self.tm5.offsetY):
+                row = []
+                for j in range(numberOfColumns):
+                    if allData or (j in columns) or (j < self.tm5.offsetX):
+                        row.append(str(self.tm5.createIndex(i,j).data()))
+                data.append(row)
 
-        if znakiSterujace == True:
-            for m, i in enumerate(dane):                                                          # Kopiowanie danych z tabeli
+        if controlCharacters == True:
+            for m, i in enumerate(data):                                                # Copying data from the table
                 if m>0:
-                    tekst = tekst + chr(13)
+                    text = text + chr(13)
                 for n, j in enumerate(i):
                     if n>0:
-                        tekst = tekst + chr(9)
-                    tekst = tekst + j
-            return tekst, True
+                        text = text + chr(9)
+                    text = text + j
+            return text, True
         else:
-            return dane, True
+            return data, True
 
-    # ------------------------ KOPIOWANIE DANYCH DO SCHOWKA I ZAPIS CSV ----------------------------END
+    # ------------------------ COPYING DATA TO THE CLIPBOARD AND SAVING CSV ------------------ ---------- END
 
 
 
-    def pokazNaMapie(self):             # zmienic zeby nie dublowac indeksow z komorek
-        listaIndeksow = self.ui.wyniki.selectedIndexes()                                    # Pobranie indeksów zaznaczonych pól
-        listaId = []
-        for i in listaIndeksow:                                                             # Pobranie indeksów obiektów do pokazania
+    def showOnMap(self):             # change not to duplicate indexes from cells
+        indexList = self.ui.result.selectedIndexes()                                    # Retrieve the indexes of the selected fields
+        idList = []
+        for i in indexList:                                                             # Get object indexes to show
             lista = i.data(Qt.UserRole)#.toList()
-            if lista == None:                                                               # Odrzucenie wierszy z nagłówkami
+            if lista == None:                                                               # Reject lines with headers
                 lista = ()
             for j in lista:
-                listaId.append(j)    #w 1 było listaId.append(j.toInt()[0])
+                idList.append(j)    #w 1 było idList.append(j.toInt()[0])
 
-        self.tm5.warstwa.selectByIds(listaId)                                           #   zaznaczenie ich na mapie
-        self.iface.mapCanvas().zoomToSelected(self.tm5.warstwa)                         #   zoom do wybranych obiektów
-        if len(listaId)==1 and self.tm5.warstwa.geometryType()==0:                      #      jeżeli warstwa jest punktowa i w grupie jest tylko jeden obiekt..
-            self.iface.mapCanvas().zoomScale(1000)                                      #      to ustaw skalę na 1:1000
-
+        self.tm5.layer.selectByIds(idList)                                           #   selecting them on the map
+        self.iface.mapCanvas().zoomToSelected(self.tm5.layer)                         #   zoom to selected objects
+        if len(idList)==1 and self.tm5.layer.geometryType()==0:                      #      if the layer is point and there is only one object in the group ..
+            self.iface.mapCanvas().zoomScale(1000)                                      #      set the scale to 1: 1000
 
 
 class ModelList(QAbstractListModel):
     """
-    Model dla okien z listami atrybutów.
-    Dane przechowywane na liście: [ (typ atrybutu, nazwa, id), ... ]
+    Model for windows with amodeut lists.
+    Data stored on the list: [(amodeutu type, name, id), ...]
     """
 
-    def __init__(self, oknoGlowne, parent=None):
+    def __init__(self, mainWindow, parent=None):
 
         super(ModelList, self).__init__(parent)
-        self.dane = []
-        self.oknoGlowne = oknoGlowne
-        self.obliczenia = Obliczenia(self)
+        self._data = []
+        self.mainWindow = mainWindow
+        self.calculations = Calculations(self)
 
 
     def rowCount(self, parent=QModelIndex):
-        return len(self.dane)
+        return len(self._data)
 
 
-    def data(self, indeks, rola=Qt.DisplayRole):
-        if not indeks.isValid() or not 0 <= indeks.row() < self.rowCount():
+    def data(self, index, role=Qt.DisplayRole):
+        if not index.isValid() or not 0 <= index.row() < self.rowCount():
             return None#QVariant()
 
-        wiersz = indeks.row()
-
-        if rola == Qt.DisplayRole:
-            return self.dane[wiersz][1]
+        row = index.row()
+        if role == Qt.DisplayRole:
+            return self._data[row][1]
 
         #elif rola == Qt.ForegroundRole:
-        #    if self.dane[wiersz][0] == 'geometria':
+        #    if self.data[row][0] == 'geometry':
         #        kolor = QColor(0,255,0)
-        #    elif self.dane[wiersz][0] == 'obliczenia':
+        #    elif self.data[row][0] == 'calculations':
         #        kolor = QColor(255,0,0)
-        #    elif self.dane[wiersz][0] == 'atrybutyTxt':
+        #    elif self.data[row][0] == 'attributeTxt':
         #        kolor = QColor(150,150,150)
         #    else:
-        #        kolor = QColor(0,0,0)   # 'atrybutyLicz'
+        #        kolor = QColor(0,0,0)   # 'countAttributes'
         #
         #    pedzel = QBrush(kolor)
         #    return pedzel
 
-        elif rola == Qt.DecorationRole:
-            if self.dane[wiersz][0] == 'geometria':
-                ikona = QIcon(":/plugins/groupstats/icons/geom.png")
-            elif self.dane[wiersz][0] == 'obliczenia':
-                ikona = QIcon(":/plugins/groupstats/icons/calc.png")
-            elif self.dane[wiersz][0] == 'atrybutyTxt':
-                ikona = QIcon(":/plugins/groupstats/icons/alpha.png")
+        elif role == Qt.DecorationRole:
+            if self._data[row][0] == 'geometry':
+                icon = QIcon(":/plugins/groupstats/icons/geom.png")
+            elif self._data[row][0] == 'calculations':
+                icon = QIcon(":/plugins/groupstats/icons/calc.png")
+            elif self._data[row][0] == 'attributeTxt':
+                icon = QIcon(":/plugins/groupstats/icons/alpha.png")
             else:
-                ikona = QIcon(":/plugins/groupstats/icons/digits.png")
+                icon = QIcon(":/plugins/groupstats/icons/digits.png")
 
-            return ikona
+            return icon
 
         return None#QVariant()
 
@@ -609,513 +606,494 @@ class ModelList(QAbstractListModel):
         return Qt.MoveAction
 
 
-    def insertRows(self, wiersz, liczba, indeks, dane):
-        self.beginInsertRows(indeks, wiersz, wiersz+liczba-1)
-        for n in range(liczba):
-            self.dane.insert(wiersz+n, dane[n])
+    def insertRows(self, row, number, index, data):
+        self.beginInsertRows(index, row, row + number - 1)
+        for n in range(number):
+            self._data.insert(row + n, data[n])
         self.endInsertRows()
         return True
 
 
-    def removeRows(self, wiersz, liczba, indeks):
-        self.beginRemoveRows(indeks, wiersz, wiersz+liczba-1)
-        del self.dane[wiersz:wiersz+liczba]
+    def removeRows(self, row, number, index):
+        self.beginRemoveRows(index, row, row + number - 1)
+        del self._data[row:row + number]
         self.endRemoveRows()
         return True
 
 
-    def mimeData(self, indeksy, typMime='application/x-groupstats-polaL'):
-        daneMime = QMimeData()
-        dane = QByteArray()
-        strumien = QDataStream(dane, QIODevice.WriteOnly)
+    def mimeData(self, indexy, typMime='application/x-groupstats-polaL'):
+        dataMime = QMimeData()
+        data = QByteArray()
+        stream = QDataStream(data, QIODevice.WriteOnly)
+        for index in indexy:
+            row = index.row()
+            stringg = pickle.dumps(self._data[row][2])
+            #stream << self.data[rows][0][0] << self.data[row][1][0]    #----------------------------- ???????[0]correct
+            # Datatypes below happen to be strings or already bytes! (b'geometry', b'calculations' or b'attributeTxt' - maybe reused?)
 
-        for indeks in indeksy:
-            wiersz = indeks.row()
-            stringg = pickle.dumps(self.dane[wiersz][2])
-            #strumien << self.dane[wiersz][0][0] << self.dane[wiersz][1][0]    #----------------------------- ???????[0]poprawic
-            # Datatypes below happen to be strings or already bytes! (b'geometria', b'obliczenia' or b'atrybutyTxt' - maybe reused?)
+            stream.writeBytes(bytes(self._data[row][0], 'utf-8') if isinstance(self._data[row][0], str) else bytes(self._data[row][0]))
+            stream.writeBytes(bytes(self._data[row][1], 'utf-8') if isinstance(self._data[row][1], str) else bytes(self._data[row][1]))
+            stream.writeInt16(self._data[row][2])
 
-            strumien.writeBytes(bytes(self.dane[wiersz][0], 'utf-8') if isinstance(self.dane[wiersz][0], str) else bytes(self.dane[wiersz][0]))
-            strumien.writeBytes(bytes(self.dane[wiersz][1], 'utf-8') if isinstance(self.dane[wiersz][1], str) else bytes(self.dane[wiersz][1]))
-            strumien.writeInt16(self.dane[wiersz][2])
+        dataMime.setData(typMime, data)
 
-        daneMime.setData(typMime, dane)
-
-        return daneMime
+        return dataMime
 
 
-    def flags(self, indeks):
-        flagi = super(ModelList, self).flags(indeks)
+    def flags(self, index):
+        flag = super(ModelList, self).flags(index)
 
-        if indeks.isValid():
-            return flagi | Qt.ItemIsDragEnabled | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+        if index.isValid():
+            return flag | Qt.ItemIsDragEnabled | Qt.ItemIsEnabled | Qt.ItemIsSelectable
         else:
             return Qt.ItemIsDropEnabled
 
 
-
-class ModelWiK(ModelList):
+class ModelRowsColumns(ModelList):
     """
-    Model dla okien z listami pól dla wierszy i kolumn
+    Model for windows with field lists for rows and columns
     """
 
     def __init__(self, parent):
 
-        super(ModelWiK, self).__init__(parent)
-        self.dane = []
+        super(ModelRowsColumns, self).__init__(parent)
+        self._data = []
 
 
-    def setData(self, indeks, wartosc):
-        self.dane.insert(indeks,wartosc)
+    def setData(self, index, value):
+        self._data.insert(index, value)
         return True
 
 
-    def ustawInneModele(self, modelWiK, modelWartosci):
-        self.modelWiK = modelWiK.dane
-        self.modelWartosci = modelWartosci.dane
+    def setOtherModels(self, modelWiK, valueModel):
+        self.modelWiK = modelWiK._data
+        self.valueModel = valueModel._data
 
 
-    def mimeData(self, indeksy):
-        return super(ModelWiK, self).mimeData(indeksy, 'application/x-groupstats-polaWK')
+    def mimeData(self, indexy):
+        return super(ModelRowsColumns, self).mimeData(indexy, 'application/x-groupstats-polaWK')
 
-    def dropMimeData(self, daneMime, akcja, wiersz, kolumna, indeks):
-        if daneMime.hasFormat('application/x-groupstats-polaL'):
-            typDanych = 'application/x-groupstats-polaL'
-        elif daneMime.hasFormat('application/x-groupstats-polaWK'):
-            typDanych = 'application/x-groupstats-polaWK'
-        elif daneMime.hasFormat('application/x-groupstats-polaW'):
-            typDanych = 'application/x-groupstats-polaW'
+    def dropMimeData(self, dataMime, share, row, column, index):
+        if dataMime.hasFormat('application/x-groupstats-polaL'):
+            dataType = 'application/x-groupstats-polaL'
+        elif dataMime.hasFormat('application/x-groupstats-polaWK'):
+            dataType = 'application/x-groupstats-polaWK'
+        elif dataMime.hasFormat('application/x-groupstats-polaW'):
+            dataType = 'application/x-groupstats-polaW'
         else:
             return False
 
-        dane = daneMime.data(typDanych)
-        strumien = QDataStream(dane, QIODevice.ReadOnly)
-        daneWy = []
-        while not strumien.atEnd():
+        data = dataMime.data(dataType)
+
+        stream = QDataStream(data, QIODevice.ReadOnly)
+        outData = []
+        while not stream.atEnd():
             #typ = ''#QString() --------------------------------???????????????????????????????????????
-            #nazwa = ''#QString()   -------------------------------------??????????????????????????????????????????????
-            #strumien >> typ >> nazwa
-            typ = strumien.readBytes().decode('utf-8')
-            nazwa = strumien.readBytes().decode('utf-8')
-            id = strumien.readInt16()
-            pole = (typ, nazwa, id)
-            daneWKiW = self.modelWiK+self.modelWartosci
-            if typ=='obliczenia' and typ in [x[0] for x in daneWKiW] and typDanych == 'application/x-groupstats-polaL':
-                self.oknoGlowne.statusBar().showMessage(QCoreApplication.translate('GroupStats','Function can be droped in only one area'),15000)
+            #name = ''#QString()   -------------------------------------??????????????????????????????????????????????
+            #stream >> typ >> name
+            typ = stream.readBytes().decode('utf-8')
+            name = stream.readBytes().decode('utf-8')
+            id = stream.readInt16()
+            field = (typ, name, id)
+            dataWKiW = self.modelWiK+self.valueModel
+
+            if typ=='calculations' and typ in [x[0] for x in dataWKiW] and dataType == 'application/x-groupstats-polaL':
+                self.mainWindow.statusBar().showMessage(QCoreApplication.translate('GroupStats','Function can be droped in only one area'),15000)
                 return False
-            elif (pole in self.modelWiK or pole in self.dane) and typDanych in ['application/x-groupstats-polaL', 'application/x-groupstats-polaW']:
-                self.oknoGlowne.statusBar().showMessage(QCoreApplication.translate('GroupStats','This field has already been droped'),15000)
+            elif (field in self.modelWiK or field in self._data) and dataType in ['application/x-groupstats-polaL', 'application/x-groupstats-polaW']:
+                self.mainWindow.statusBar().showMessage(QCoreApplication.translate('GroupStats','This field has already been droped'),15000)
                 return False
-            #elif (typ != 'obliczenia' and 'obliczenia' in [x[0] for x in self.dane]) or (typ=='obliczenia' and len([x for x in self.dane if (x[0] != 'obliczenia')])>0):
-            #    print 'pola obliczeniowe nie moga byc razem z innymi polami'
+            #elif (typ != 'calculations' and 'calculations' in [x[0] for x in self.data]) or (typ=='calculations' and len([x for x in self.data if (x[0] != 'calculations')])>0):
+            #    pprint 'calculated fields cannot be together with other fields'
             #    return False
-            elif typ=='obliczenia' and id not in self.obliczenia.listaText and 'atrybutyTxt' in [x[0] for x in self.modelWartosci]:  #nazwa != self.obliczenia.lista[0][0]
-                self.oknoGlowne.statusBar().showMessage(QCoreApplication.translate('GroupStats','For the text value function can only be one of (%s)' % self.obliczenia.nazwyText),15000)
+            elif typ=='calculations' and id not in self.calculations.textList and 'attributeTxt' in [x[0] for x in self.valueModel]:  #name != self.calculations.lista[0][0]
+                self.mainWindow.statusBar().showMessage(QCoreApplication.translate('GroupStats','For the text value function can only be one of (%s)' % self.calculations.textNames), 15000)
                 return False
 
-            daneWy.append(pole)
+            outData.append(field)
 
-        self.insertRows(wiersz, len(daneWy), indeks, daneWy)
+        self.insertRows(row, len(outData), index, outData)
 
         return True
 
 
-class ModelWartosci(ModelList):
+class ValueModel(ModelList):
     """
-    Model dla okna z wartosciami do obliczenia
+    Model for a window with values ​​for calculations
     """
 
     def __init__(self, parent=None):
 
-        super(ModelWartosci, self).__init__(parent)
-        self.dane = []
+        super(ValueModel, self).__init__(parent)
+        self._data = []
 
-    def mimeData(self, indeksy):
-        return super(ModelWartosci, self).mimeData(indeksy, 'application/x-groupstats-polaW')
+    def mimeData(self, indexy):
+        return super(ValueModel, self).mimeData(indexy, 'application/x-groupstats-polaW')
 
-    def dropMimeData(self, daneMime, akcja, wiersz, kolumna, indeks):
-
-        if daneMime.hasFormat('application/x-groupstats-polaL'):
-            typDanych = 'application/x-groupstats-polaL'
-        elif daneMime.hasFormat('application/x-groupstats-polaWK'):
-            typDanych = 'application/x-groupstats-polaWK'
-        elif daneMime.hasFormat('application/x-groupstats-polaW'):
-            typDanych = 'application/x-groupstats-polaW'
+    def dropMimeData(self, dataMime, share, row, column, index):
+        if dataMime.hasFormat('application/x-groupstats-polaL'):
+            dataType = 'application/x-groupstats-polaL'
+        elif dataMime.hasFormat('application/x-groupstats-polaWK'):
+            dataType = 'application/x-groupstats-polaWK'
+        elif dataMime.hasFormat('application/x-groupstats-polaW'):
+            dataType = 'application/x-groupstats-polaW'
         else:
             return False
 
-        dane = daneMime.data(typDanych)
-        strumien = QDataStream(dane, QIODevice.ReadOnly)
-        daneWy = []
-        while not strumien.atEnd():
-
+        data = dataMime.data(dataType)
+        stream = QDataStream(data, QIODevice.ReadOnly)
+        outData = []
+        while not stream.atEnd():
             #typ = '2'#QString()-------------------------------------????????????????????????????
-            #nazwa = '2'#QString()-------------------------------------?????????????????????
-            #strumien >> typ >> nazwa
-            typ = strumien.readBytes().decode('utf-8')
-            nazwa = strumien.readBytes().decode('utf-8')
-            id = strumien.readInt16()
-            pole = (typ, nazwa, id)
-
-            daneWszystkie = self.modelWiersze+self.modelKolumny+self.dane
-            daneWiK = self.modelWiersze+self.modelKolumny
-            if len(self.dane)>=2:
-                self.oknoGlowne.statusBar().showMessage(QCoreApplication.translate('GroupStats',"Area 'Value' may contain a maximum of two entries"),15000)
+            #name = '2'#QString()-------------------------------------?????????????????????
+            #stream >> typ >> name
+            typ = stream.readBytes().decode('utf-8')
+            name = stream.readBytes().decode('utf-8')
+            id = stream.readInt16()
+            field = (typ, name, id)
+            allData = self.modelRows+self.modelColumns+self._data
+            dataWiK = self.modelRows+self.modelColumns
+            if len(self._data)>=2:
+                self.mainWindow.statusBar().showMessage(QCoreApplication.translate('GroupStats',"Area 'Value' may contain a maximum of two entries"),15000)
                 return False
-            elif typ=='obliczenia' and typ in [x[0] for x in daneWszystkie] and typDanych == 'application/x-groupstats-polaL':
-                self.oknoGlowne.statusBar().showMessage(QCoreApplication.translate('GroupStats','Function can be droped in only one area'),15000)
+            elif typ=='calculations' and typ in [x[0] for x in allData] and dataType == 'application/x-groupstats-polaL':
+                self.mainWindow.statusBar().showMessage(QCoreApplication.translate('GroupStats','Function can be droped in only one area'),15000)
                 return False
-            elif len(self.dane)==1 and typ != 'obliczenia' and self.dane[0][0] != 'obliczenia':
-                self.oknoGlowne.statusBar().showMessage(QCoreApplication.translate('GroupStats',"In the area 'Value' one of the items must be a function"),15000)
+            elif len(self._data)==1 and typ != 'calculations' and self._data[0][0] != 'calculations':
+                self.mainWindow.statusBar().showMessage(QCoreApplication.translate('GroupStats',"In the area 'Value' one of the items must be a function"),15000)
                 return False
-            elif len(self.dane)==1 and ((typ=='atrybutyTxt' and self.dane[0][2] not in self.obliczenia.listaText) or (id not in self.obliczenia.listaText and self.dane[0][0]=='atrybutyTxt')):
-                self.oknoGlowne.statusBar().showMessage(QCoreApplication.translate('GroupStats','For the text value function can only be one of (%s)' % self.obliczenia.nazwyText),15000)
+            elif len(self._data)==1 and ((typ == 'attributeTxt' and self._data[0][2] not in self.calculations.textList) or (id not in self.calculations.textList and self._data[0][0] == 'attributeTxt')):
+                self.mainWindow.statusBar().showMessage(QCoreApplication.translate('GroupStats','For the text value function can only be one of (%s)' % self.calculations.textNames), 15000)
                 return False
-            elif typ=='atrybutyTxt' and len([x for x in daneWiK if (x[0]=='obliczenia' and x[2] not in self.obliczenia.listaText)])>0:
-                self.oknoGlowne.statusBar().showMessage(QCoreApplication.translate('GroupStats','For the text value function can only be one of (%s)' % self.obliczenia.nazwyText),15000)
+            elif typ=='attributeTxt' and len([x for x in dataWiK if (x[0]=='calculations' and x[2] not in self.calculations.textList)])>0:
+                self.mainWindow.statusBar().showMessage(QCoreApplication.translate('GroupStats','For the text value function can only be one of (%s)' % self.calculations.textNames), 15000)
                 return False
 
-            daneWy.append(pole)
+            outData.append(field)
 
-        self.insertRows(wiersz, len(daneWy), indeks, daneWy)
+        self.insertRows(row, len(outData), index, outData)
 
-
-        # sprawdzic: co jeśli przy usuwaniu zostanie tylko pole obliczeniowe albo pole wartosci
-
-
+        # check: what if when deleting only the calculated field or the value field is left
         return True
 
-    def ustawInneModele(self, modelWiersze, modelKolumny):
-        self.modelWiersze = modelWiersze.dane
-        self.modelKolumny = modelKolumny.dane
+    def setOtherModels(self, modelRows, modelColumns):
+        self.modelRows = modelRows._data
+        self.modelColumns = modelColumns._data
 
 
 class ModelListaPol(ModelList):
     """
-    Model dla okna z listą dostępnych pól
+    Model for the window with a list of available fields
     """
 
     def __init__(self, parent=None):
 
         super(ModelListaPol, self).__init__(parent)
         #self.ustawDane(slownikPol)
-        self.dane = []
+        self._data = []
 
-
-
-    def dropMimeData(self, daneMime, akcja, wiersz, kolumna, indeks):
+    def dropMimeData(self, dataMime, share, row, column, index):
         return True
 
 
-    def removeRows(self, wiersz, liczba, indeks):
+    def removeRows(self, row, number, index):
 
         return True
 
 
-class ModelWyniki(QAbstractTableModel):     # gotowe
+class ResultModel(QAbstractTableModel):     # finished
     """
-    Model dla okna z wynikami obliczeń
+    Model for the window with calculation results
     """
 
-    def __init__(self, dane, wiersze, kolumny, warstwa, parent=None):
-        super(ModelWyniki, self).__init__(parent)
-        self.dane = dane
-        self.wiersze = wiersze
-        self.kolumny = kolumny
-        self.warstwa = warstwa
+    def __init__(self, data, rows, columns, layer, parent=None):
+        super(ResultModel, self).__init__(parent)
+        self._data = data
+        self.rows = rows
+        self.columns = columns
+        self.layer = layer
 
-        self.offsetX = max(1,len(wiersze[0]))                                           # Przesunięcie współrzednych tak, aby dane zaczynały się od 0,0
-        self.offsetY = max(1,len(kolumny[0]))
+        self.offsetX = max(1,len(rows[0]))                                           # Coordinate shift so that the data starts with 0.0
+        self.offsetY = max(1, len(columns[0]))
 
-        if len(wiersze[0]) != 0 and len(kolumny[0]) != 0:                               # Przesunięcie o jeden wiersz (pusty) aby zrobić miejsce na nazwy wierszy
+        if len(rows[0]) != 0 and len(columns[0]) != 0:                               # One line offset (empty) to make room for the names of the lines
                 self.offsetY += 1
 
     def columnCount(self,parent=QModelIndex()):
-        if len(self.wiersze[0])>0 and len(self.kolumny[0])>0:
-            l = len(self.kolumny)+len(self.wiersze[0])-1
-        elif len(self.wiersze[0])>0 and len(self.kolumny[0])==0:
-            l = len(self.wiersze[0])+1
-        elif len(self.wiersze[0])==0 and len(self.kolumny[0])>0:
-            l = len(self.kolumny)
+        if len(self.rows[0])>0 and len(self.columns[0])>0:
+            l = len(self.columns) + len(self.rows[0]) - 1
+        elif len(self.rows[0])>0 and len(self.columns[0])==0:
+            l = len(self.rows[0])+1
+        elif len(self.rows[0])==0 and len(self.columns[0])>0:
+            l = len(self.columns)
         else:
             l = 2
 
-        return l #max(len(self.wiersze[0])+1,len(self.kolumny)+len(self.wiersze[0]))
+        return l #max(len(self.rows[0])+1,len(self.column)+len(self.rows[0]))
 
     def rowCount(self, parent=QModelIndex()):
-        return max(2,len(self.wiersze)+len(self.kolumny[0]))
+        return max(2, len(self.rows) + len(self.columns[0]))
 
-    def data(self, indeks, rola=Qt.DisplayRole):
-        if not indeks.isValid() or not 0 <= indeks.row() < self.rowCount():
+    def data(self, index, role=Qt.DisplayRole):
+        if not index.isValid() or not 0 <= index.row() < self.rowCount():
             return None
 
-        wiersz = indeks.row() - self.offsetY
-        kolumna = indeks.column() - self.offsetX
+        row = index.row() - self.offsetY
+        column = index.column() - self.offsetX
 
-        if rola == Qt.DisplayRole:
-            if wiersz >=0 and kolumna >=0:                                      # Dane
-                return self.dane[wiersz][kolumna][0]
-            elif kolumna < 0 and wiersz >= 0 and len(self.wiersze[0])>0:        # opisy wierszy
-                return self.wiersze[wiersz+1][kolumna]
-            elif wiersz == -1 and kolumna <0 and len(self.wiersze[0])>0:        # nazwy wierszy
-                return self.wiersze[0][kolumna]
-            elif kolumna >= -1 and wiersz < 0 and len(self.kolumny[0])>0:       # opisy i nazwy kolumn
-                if len(self.wiersze[0])>0:
-                    if wiersz == -1:                                            # linia przerwy
+        if role == Qt.DisplayRole:
+            if row >=0 and column >=0:                                      # Data
+                return self._data[row][column][0]
+            elif column < 0 and row >= 0 and len(self.rows[0])>0:        # descriptions of rows
+                return self.rows[row+1][column]
+            elif row == -1 and column <0 and len(self.rows[0])>0:        # row names
+                return self.rows[0][column]
+            elif column >= -1 and row < 0 and len(self.columns[0])>0:       # descriptions and column names
+                if len(self.rows[0])>0:
+                    if row == -1:                                            # break line
                         return ''
                     else:
-                        return self.kolumny[kolumna+1][wiersz+1]                # opisy i nazwy kolumn jesli jest linia przerwy
+                        return self.columns[column + 1][row + 1]                # descriptions and column names if there is a break line
                 else:
-                    return self.kolumny[kolumna+1][wiersz]                      # opisy i nazwy kolumn jesli nie ma linii przerwy
+                    return self.columns[column + 1][row]                      # descriptions and column names if there is no gap line
 
-        elif rola == Qt.UserRole:
-            if wiersz >=0 and kolumna >=0:                                      # Dane
-                return self.dane[wiersz][kolumna][1]
+        elif role == Qt.UserRole:
+            if row >=0 and column >=0:                                      # Data
+                return self._data[row][column][1]
 
-        elif rola == Qt.UserRole+1:
+        elif role == Qt.UserRole+1:
             #print "user role+1"
-            if wiersz <0 and kolumna >=0:                                      # kolumna, wiersz, czy dane
-                return "kolumna"
-            elif wiersz >=0 and kolumna <0:
-                return "wiersz"
-            elif wiersz >=0 and kolumna >=0:
-                return "dane"
+            if row <0 and column >=0:                                      # column, row or data
+                return "column"
+            elif row >=0 and column <0:
+                return "row"
+            elif row >=0 and column >=0:
+                return "data"
 
-        elif rola == Qt.BackgroundRole:                                         # Wypełnienie komórek
-            if wiersz<0 or kolumna<0:                                           # szare dla komórek z opisami i nazwami
-                kolor = QColor(245,235,235)
-                pedzel = QBrush(kolor)
-                return pedzel
+        elif role == Qt.BackgroundRole:                                         # Cell filling
+            if row<0 or column<0:                                           # gray for cells with descriptions and namesi
+                colour = QColor(245,235,235)
+                brush = QBrush(colour)
+                return brush
 
-        elif rola == Qt.TextAlignmentRole:
-            if kolumna < 0 and wiersz < -1 and len(self.wiersze[0]) != 0:
+        elif role == Qt.TextAlignmentRole:
+            if column < 0 and row < -1 and len(self.rows[0]) != 0:
                 return Qt.AlignRight | Qt.AlignVCenter
-            elif kolumna >= 0 and wiersz < 0:
+            elif column >= 0 and row < 0:
                 return Qt.AlignHCenter | Qt.AlignVCenter
-            elif kolumna >= 0 and wiersz >= 0:
+            elif column >= 0 and row >= 0:
                 return Qt.AlignRight | Qt.AlignVCenter
 
-        elif rola == Qt.FontRole:
-            if wiersz<0 and kolumna<0:
-                czcionka = QFont()
-                czcionka.setBold(True)
-                #czcionka.setItalic(True)
-                return czcionka
+        elif role == Qt.FontRole:
+            if row<0 and column<0:
+                font = QFont()
+                font.setBold(True)
+                #font.setItalic(True)
+                return font
 
         return None#QVariant()
 
-    def sort(self, kolumna, tryb):
+    def sort(self, column, mode):
         """
-        Sortuje tabelę wyników według wybranej kolumny
-        kolumna - numer kolumny
-        tryb - 1-malejąco, inne-rosnąco
+        Sorts the results table by the selected column
+        column - column number
+        mode - 1-descending, other-ascending
         """
 
-        if len(self.wiersze) == 1:                                              # Jeżeli jest tylko jeden wiersz, to nie ma co sortować
+        if len(self.rows) == 1:                                              # If there is only one line, there is nothing to sort
             return
 
-        tmp = []                                                                # Tymczasowa lista na posortowaną kolumnę
+        tmp = []                                                                # A temporary list for a sorted column
 
-        if kolumna >= self.offsetX:                                             # Wybranie danych do sortowania
-            for n, d in enumerate(self.dane):                                   # n-numer wiersza przed stortowniem, d-dane w wierszu
-                tmp.append((n,d[kolumna-self.offsetX][0]))
-        else:                                                                   # lub nazw wierszy
-            for n, d in enumerate(self.wiersze[1:]):                            # n-numer wiersza przed stortowniem, d-opis wiersza
-                if str(type(d[kolumna])) != "<type 'float'>":                   # Zamiana tekstu na liczby, jeżeli jest liczbą (aby poprawnie sortowało liczby)
-                    try:
-                        liczba = float(d[kolumna])
-                    except:
-                        test = False
-                    else:
-                        test = True
-                else:
-                    test = False
+        if column >= self.offsetX:                                             # Selecting data to sort
+            # n-line number before storting, d-data in line
+            try:
+                tmp.extend([(n, float(d[column - self.offsetX][0])) for n, d in enumerate(self._data)])
+            except (ValueError, TypeError):
+                tmp.extend([(n, str(d[column - self.offsetX][0])) for n, d in enumerate(self._data)])
+        else:                                                                   # or line names
+            # Either convert all values or none to float for sorting
+            # n-row number before storting, d-row description
+            try:
+                tmp.extend([(n, float(d[column])) for n, d in enumerate(self.rows[1:])])
+            except (ValueError, TypeError):
+                tmp.extend([(n, d[column]) for n, d in enumerate(self.rows[1:])])
 
-                if test:
-                    tmp.append((n,liczba))
-                else:
-                    tmp.append((n,d[kolumna]))
-
-        tmp.sort(key=lambda x: x[1])                                            # sortowanie rosnąco
-        if tryb==1:                                                             # sortowanie malejąco
+        tmp.sort(key=lambda x: x[1])                                            # ascending sorting
+        if mode==1:                                                             # descending sorting
             tmp.reverse()
 
-        dane2 = tuple(self.dane)                                                # Tymczasowa krotka ze wszystkomi danymi
-        self.dane=[]
-        wiersze2=tuple(self.wiersze)                                            # Tymczasowa krotka z opisami wierszy
-        self.wiersze=[]
-        self.wiersze.append(wiersze2[0])                                        # Dodanie nazw wierszy (tylko nazwy, bez opisów wierszy)
+        data2 = tuple(self._data)                                                # A temporary tuple with all the data
+        self._data=[]
+        rows2=tuple(self.rows)                                            # A temporary tuple with descriptions of the rows
+        self.rows=[]
+        self.rows.append(rows2[0])                                        # Adding row names (only names, no row descriptions)
 
-        for i in tmp:                                                           # Ułożenie wszystkich danych i opisów wierszy wg tymczasowej listy sortowania
-            self.dane.append(dane2[i[0]])
-            self.wiersze.append(wiersze2[i[0]+1])
+        for i in tmp:                                                           # Arrange all data and row descriptions according to a temporary sort list
+            self._data.append(data2[i[0]])
+            self.rows.append(rows2[i[0]+1])
 
-        topLeft = self.createIndex(0,0)                                         # Sygnał zmiany danych
+        topLeft = self.createIndex(0,0)                                         # Signal change data
         bottomRight = self.createIndex(self.rowCount(), self.columnCount())
         self.dataChanged.emit(topLeft, bottomRight)
 
 
-    def sortRows(self, wiersz, tryb):
+    def sortRows(self, row, mode):
         """
-        Sortuje tabelę wyników według wybranego wiersza
-        wiersz - numer wiersza
-        tryb - 1-malejąco, inne-rosnąco
+        Sorts the results table according to the chosen rows
+        rows - rows number
+        mode - 1-descending, other-ascending
         """
+        if len(self.columns) - self.offsetX <=1:                                              # If there is only one column, there is nothing to sort
+            return                                                              # (self.columns are then the following list [(),])
+        tmp = []                                                                # A temporary list for a sorted row
 
-        if len(self.kolumny) == 1:                                              # Jeżeli jest tylko jedna kolumna, to nie ma co sortować
-            return                                                              # (self.kolumny są wtedy następującą listą [(),])
+        if row >= self.offsetY:                                              # Selecting data to sort
+            # Either convert all values or none to float for sorting
+            try:
+                tmp.extend([(n, float(d[0])) for n, d in enumerate(self._data[row - self.offsetY])])
+            except (ValueError, TypeError):
+                tmp.extend([(n, str(d[0])) for n, d in enumerate(self._data[row - self.offsetY])])    # n-column number before storting, d-data in the column
+        else:                                                                   # or column names
+            # Either convert all values or none to float for sorting
+            try:
+                tmp.extend([(n, float(d[row])) for n, d in enumerate(self.columns[1:])])
+            except (ValueError, TypeError):
+                tmp.extend([(n, str(d[row])) for n, d in enumerate(self.columns[1:])])
+            except IndexError:
+                # The table can't be sorted using this column. It's probably the row header columnn
+                return
 
-        tmp = []                                                                # Tymczasowa lista na posortowany wiersz
 
-        if wiersz >= self.offsetY:                                              # Wybranie danych do sortowania
-            for n, d in enumerate(self.dane[wiersz-self.offsetY]):              # n-numer kolumny przed stortowniem, d-dane w kolumnie
-                tmp.append((n,d[0]))
-        else:                                                                   # lub nazw kolumn
-            for n, d in enumerate(self.kolumny[1:]):                            # n-numer kolumny przed stortowniem, d-opis kolumny
-                if str(type(d[wiersz])) != "<type 'float'>":                    # Zamiana tekstu na liczby, jeżeli jest liczbą (aby poprawnie sortowało liczby)
-                    try:
-                        liczba = float(d[wiersz])
-                    except:
-                        test = False
-                    else:
-                        test = True
-                else:
-                    test = False
+        tmp.sort(key=lambda x: x[1])                                    # ascending sorting
 
-                if test:
-                    tmp.append((n,liczba))
-                else:
-                    tmp.append((n,d[wiersz]))
-
-        tmp.sort(key=lambda x: x[1])                                    # sortowanie rosnąco
-        if tryb==1:                                                             # sortowanie malejąco
+        if mode==1:                                                             # descending sorting
             tmp.reverse()
 
-        dane2 = tuple(self.dane)                                                # Tymczasowa krotka ze wszystkomi danymi
-        self.dane=[]
-        kolumny2=tuple(self.kolumny)                                            # Tymczasowa krotka z opisami kolumn
-        self.kolumny=[]
-        self.kolumny.append(kolumny2[0])                                        # Dodanie nazw kolumn (tylko nazwy, bez opisów kolumn)
-
-        for j in dane2:                                                         # Ułożenie wszystkich danych wg tymczasowej listy sortowania
-            wiersz = []
+        data2 = tuple(self._data)                                                # A temporary tuple with all the data
+        self._data=[]
+        columns2=tuple(self.columns)                                            # A temporary tuple with column descriptions
+        self.columns=[]
+        self.columns.append(columns2[0])                                        # Adding column names (only names, no column descriptions)
+        for j in data2:                                                         # Arranging all data according to a temporary sort list
+            row = []
             for i in tmp:
-                wiersz.append(j[i[0]])
-            self.dane.append(tuple(wiersz))
+                row.append(j[i[0]])
+            self._data.append(tuple(row))
 
-        for i in tmp:                                                           # Ułożenie opisów kolumn wg tymczasowej listy sortowania
-            self.kolumny.append(kolumny2[i[0]+1])
+        for i in tmp:                                                           # Arrangement of column descriptions according to a temporary sort list
+            self.columns.append(columns2[i[0] + 1])
 
-        topLeft = self.createIndex(0,0)                                         # Sygnał zmiany danych
+        topLeft = self.createIndex(0,0)                                         # Signal change data
         bottomRight = self.createIndex(self.rowCount(), self.columnCount())
         self.dataChanged.emit(topLeft, bottomRight)
 
 
-class OknoWyniki(QTableView):
+class WindowResults(QTableView):
     """
-    Okno z wynikami obliczeń
+    Window with calculation results
     """
 
     def __init__(self, parent=None):
-        super(OknoWyniki, self).__init__(parent)
+        super(WindowResults, self).__init__(parent)
 
         self.setSortingEnabled(True)
-        self.setObjectName("wyniki")
+        self.setObjectName("result")
         self.verticalHeader().setSortIndicatorShown(True)
 
-        self.clicked.connect(self.zaznaczWszystko)
+        self.clicked.connect(self.selectAll)
 
 
-    def selectionCommand (self, indeks, event=None ):
+    def selectionCommand(self, index, event=None):
         """
-        Implementacja oryginalnej metody - dodaje zaznaczanie całych wierszy i kolumn gdy zaznaczono nagłówek tabeli
+        Implementation of the original method - adds selection of entire rows and columns when the table header is selected
         """
-        flagi = super(OknoWyniki, self).selectionCommand (indeks, event)        # wywołanie oryginalnej metody
-        test = self.model().data(indeks, Qt.UserRole+1)                         # sprawdzenie typu zaznaczonej komórki
-        if test == "wiersz":
-            return flagi | QItemSelectionModel.Rows
-        elif test == "kolumna":
-            return flagi | QItemSelectionModel.Columns
+        flag = super(WindowResults, self).selectionCommand(index, event)        # calling the original method
+        test = self.model().data(index, Qt.UserRole+1)                         # checking the selected cell type
+        if test == "row":
+            return flag | QItemSelectionModel.Rows
+        elif test == "column":
+            return flag | QItemSelectionModel.Columns
         else:
-            return flagi
+            return flag
 
 
-    def zaznaczWszystko (self,indeks):
+    def selectAll(self, index):
         """
-        Zaznacznie lub odznaczanie wszystkich danych po kliknięciu w narożniku tabeli
+        Select or deselect all data when clicked in the corner of the table
         """
-        test = self.model().data(indeks, Qt.UserRole+1)                         # sprawdzenie typu zaznaczonej komórki
-        if test not in ("dane", "wiersz", "kolumna"):                           # sprawdzenie czy narożnik
-            if self.selectionModel().isSelected(indeks):                        # jeżeli zaznaczono narożnik to zaznacza też wszystkie dane
+        test = self.model().data(index, Qt.UserRole+1)                      # checking the selected cell type
+        if test not in ("data", "row", "column"):                           # checking if the corner
+            if self.selectionModel().isSelected(index):                        # if the corner is selected, it also marks all dataa
                 self.selectAll()
             else:
-                self.clearSelection ()                                          # odznacza wszystkie dane
+                self.clearSelection ()                                          # deselects all data
 
 
-
-class Obliczenia(QObject):                   # gotowe
+class Calculations(QObject):                   # finished
     """
-    Klasa zawierająca funkcje dokonujące obliczeń statystycznych
+    A class that suppresses functions that perform statistical calculations
     """
 
-    def __init__(self, parent):                                                                            # Lista z ID, nazwą i funkcją obliczająca
-        super(Obliczenia, self).__init__(parent)
-                                                                                                            # Nie zmieniać ID funkcji! (są używane do warunków)
-        self.lista = {  0:(QCoreApplication.translate('Obliczenia','count'), self.liczebnosc),
-                        1:(QCoreApplication.translate('Obliczenia','sum'), self.suma),
-                        2:(QCoreApplication.translate('Obliczenia','average'), self.srednia),
-                        3:(QCoreApplication.translate('Obliczenia','variance'), self.wariancja),
-                        4:(QCoreApplication.translate('Obliczenia','stand.dev.'), self.odchylenie),
-                        5:(QCoreApplication.translate('Obliczenia','median'), self.mediana),
-                        6:(QCoreApplication.translate('Obliczenia','min'), self.minimum),
-                        7:(QCoreApplication.translate('Obliczenia','max'), self.maksimum),
-                        8:(QCoreApplication.translate('Obliczenia','unique'), self.unikalne) }
+    def __init__(self, parent):                                                                     # List with ID, name and calculating function
+        super(Calculations, self).__init__(parent)
 
-        self.listaText = (0,8)                                                                        # Obliczenia działające również na tekście
+                                                                                                    # Do not change the function ID! (used for conditions)
+        self.list = {0:(QCoreApplication.translate('Calculations', 'count'), self.count),
+                     1:(QCoreApplication.translate('Calculations','sum'), self.sum),
+                     2:(QCoreApplication.translate('Calculations','average'), self.average),
+                     3:(QCoreApplication.translate('Calculations','variance'), self.variance),
+                     4:(QCoreApplication.translate('Calculations','stand.dev.'), self.stand_dev),
+                     5:(QCoreApplication.translate('Calculations','median'), self.median),
+                     6:(QCoreApplication.translate('Calculations','min'), self.minimum),
+                     7:(QCoreApplication.translate('Calculations','max'), self.maximum),
+                     8:(QCoreApplication.translate('Calculations','unique'), self.unique)}
 
-        self.nazwyText = ''
-        for i in self.listaText:
-            self.nazwyText = self.nazwyText + self.lista[i][0] + ', '
+        self.textList = (0, 6, 7, 8)                                                                        # Calculations also working on text
 
-        self.nazwyText = self.nazwyText[:-2]
+        self.textNames = ''
+        for i in self.textList:
+            self.textNames = self.textNames + self.list[i][0] + ', '
 
-    def liczebnosc(self, wyniki):
-        return len(wyniki)
+        self.textNames = self.textNames[:-2]
 
-    def suma(self, wyniki):
-        return sum(wyniki)
+    def count(self, result):
+        return len(result)
 
-    def srednia(self, wyniki):
-        return self.suma(wyniki)/self.liczebnosc(wyniki)
+    def sum(self, result):
+        return sum(result)
 
-    def wariancja(self, wyniki):
-        wariancja = 0
-        for x in wyniki:
-            wariancja = wariancja + (x-self.srednia(wyniki))**2
-        return wariancja/self.liczebnosc(wyniki)
+    def average(self, result):
+        return self.sum(result)/self.count(result)
 
-    def odchylenie(self, wyniki):
-        return sqrt(self.wariancja(wyniki))
+    def variance(self, result):
+        _variance = 0
+        for x in result:
+            _variance = _variance + (x-self.average(result))**2
+        return _variance/self.count(result)
 
-    def mediana(self, wyniki):
-        wyniki.sort()
-        liczebnosc = self.liczebnosc(wyniki)
-        if liczebnosc == 1:
-            mediana = wyniki[0]
+    def stand_dev(self, result):
+        return sqrt(self.variance(result))
+
+    def median(self, result):
+        result.sort()
+        count = self.count(result)
+        if count == 1:
+            median = result[0]
         else:
-            pozycja = int(liczebnosc / 2)
-            if liczebnosc%2 == 0:
-                mediana = (wyniki[pozycja]+wyniki[pozycja-1])/2
+            position = int(count / 2)
+            if count%2 == 0:
+                median = (result[position]+result[position-1])/2
             else:
-                mediana = wyniki[pozycja]
-        return mediana
+                median = result[position]
+        return median
 
-    def minimum(self, wyniki):
-        return min(wyniki)
+    def minimum(self, result):
+        return min(result)
 
-    def maksimum(self, wyniki):
-        return max(wyniki)
+    def maximum(self, result):
+        return max(result)
 
-    def unikalne(self, wyniki):
-        return len(set(wyniki))
+    def unique(self, result):
+        return len(set(result))
 
