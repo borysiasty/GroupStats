@@ -960,6 +960,10 @@ class ResultModel(QAbstractTableModel):     # finished
                 tmp.extend([(n, float(d[row])) for n, d in enumerate(self.columns[1:])])
             except (ValueError, TypeError):
                 tmp.extend([(n, str(d[row])) for n, d in enumerate(self.columns[1:])])
+            except IndexError:
+                # The table can't be sorted using this column. It's probably the row header columnn
+                return
+
 
         tmp.sort(key=lambda x: x[1])                                    # ascending sorting
 
