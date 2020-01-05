@@ -8,7 +8,7 @@ about=
 
  Migrato alla versione QGIS3 da Faunalia per Arpa Piemonte per il programma ERIKUS in collaborazione con Regione Piemonte e Dipartimento della Protezione Civile - Funzione Censimento Danni
 
-version=2.2.0
+version=2.2.1
 qgisMinimumVersion=3.0
 
 # tags are comma separated with spaces allowed
@@ -29,6 +29,7 @@ author=Rajmund Szostok. Migrated to QGIS 3 by Borys Jurgiel and Faunalia. The co
 email=qgis@borysjurgiel.pl
 
 changelog=
+    2.2.1    Adds support for all numeric fields where QgsField.isNumeric() is True.
     2.2.0    Code translated into English, tests added. Great work by HenrikSpa.
     2.1.5    Fix non working memory layers (issue #5)
     2.1.4    Fix Qlonglong/Integer64 regarded as text (issue #4)

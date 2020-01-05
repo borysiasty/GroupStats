@@ -369,7 +369,7 @@ class GroupStatsDialog(QMainWindow):
 
         for i in range(fields.count()):
             field = fields.at(i)
-            if field.typeName().upper() in ('REAL', 'FLOAT4', 'DOUBLE') or field.typeName().upper().startswith('INT'):
+            if field.isNumeric():
                 dictionary['countAttributes'].append((field.name(), i))
             else:
                 dictionary['attributeTxt'].append((field.name(), i))
