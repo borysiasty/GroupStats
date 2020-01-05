@@ -29,7 +29,7 @@ author=Rajmund Szostok. Migrated to QGIS 3 by Borys Jurgiel and Faunalia. The co
 email=qgis@borysjurgiel.pl
 
 changelog=
-    2.2.1    Adds support for all numeric fields where QgsField.isNumeric() is True.
+    2.2.1    Adds support for all numeric fields where QgsField.isNumeric() is True. Patch by HenrikSpa.
     2.2.0    Code translated into English, tests added. Great work by HenrikSpa.
     2.1.5    Fix non working memory layers (issue #5)
     2.1.4    Fix Qlonglong/Integer64 regarded as text (issue #4)
