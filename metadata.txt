@@ -8,16 +8,16 @@ about=
 
  Migrato alla versione QGIS3 da Faunalia per Arpa Piemonte per il programma ERIKUS in collaborazione con Regione Piemonte e Dipartimento della Protezione Civile - Funzione Censimento Danni
 
-version=2.2.1
+version=2.2.2
 qgisMinimumVersion=3.0
 
 # tags are comma separated with spaces allowed
 tags=stats,analysis,pivot table
 category=Vector
 
-homepage=https://github.com/borysiasty/GroupStats
-tracker=https://github.com/borysiasty/GroupStats/issues
-repository=https://github.com/borysiasty/GroupStats
+homepage=https://github.com/HenrikSpa/GroupStats
+tracker=https://github.com/HenrikSpa/GroupStats/issues
+repository=https://github.com/HenrikSpa/GroupStats
 
 icon=icon.png
 
@@ -25,10 +25,11 @@ experimental=False
 deprecated=False
 
 # Author contact information
-author=Rajmund Szostok. Migrated to QGIS 3 by Borys Jurgiel and Faunalia. The code translated to English by HenrikSpa.
-email=qgis@borysjurgiel.pl
+author=Rajmund Szostok. Migrated to QGIS 3 by Borys Jurgiel and Faunalia. Code translated to English by Henrik Spångmyr.
+email=henrik.spangmyr@midvatten.se
 
 changelog=
+    2.2.2    Plugin ownership transferred to HenrikSpa
     2.2.1    Adds support for all numeric fields where QgsField.isNumeric() is True. Patch by HenrikSpa.
     2.2.0    Code translated into English, tests added. Great work by HenrikSpa.
     2.1.5    Fix non working memory layers (issue #5)
